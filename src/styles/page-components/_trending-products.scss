@@ -1,0 +1,151 @@
+// .trending-section {
+    .product-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+
+        // &:hover {
+        //     transform: translateY(-5px);
+        // }
+
+        .image-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden; // This "clips" the zoom so it stays inside the box
+            aspect-ratio: 1 / 1.2;
+            cursor: pointer;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.5s ease;
+            }
+
+            .badge-container {
+                position: absolute;
+                top: 12px;
+                left: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                .discount-badge {
+                    background: linear-gradient(90deg, #ff0055, #ff00aa);
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    width: fit-content;
+                    z-index: 2;
+                }
+
+                .collection-badge {
+                    background: #007bff;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    width: fit-content;
+                    z-index: 2;
+                }
+            }
+
+            .wishlist-btn {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                background: white;
+                border: none;
+                border-radius: 50%;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                z-index: 2;
+            }
+
+            .quick-add-container {
+                z-index: 2;
+                position: absolute;
+                bottom: 12px;
+                left: 0;
+                width: 100% !important;
+                // display: none;
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 1.2s ease,
+                    visibility 1.2s ease;
+            }
+
+            &:hover {
+                img {
+                    transform: scale(1.1); // Adjust scale (1.1 = 10% zoom)
+                }
+
+                .quick-add-container {
+                    // display: block;
+                    opacity: 1;
+                    visibility: visible;
+                    transition:
+                        opacity 0.8s ease,
+                        visibility 0s linear;
+                }
+            }
+        }
+
+        .product-info {
+            padding: 12px 4px;
+
+            .tags {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 8px;
+
+                .product-tags-cls {
+                    border-radius: 26.83px;
+                    background: #f1f5f9;
+                    border: 0.8px solid #e2e8f0;
+                    color: #314158;
+                    padding: 4px 10px;
+                    font-weight: 600;
+                    font-size: 12px;
+                }
+
+                .first-child-tag {
+                    background: #dbeafe;
+                    color: #1447e6;
+                    border-top: 0.8px solid #bedbff;
+                }
+            }
+
+            .title {
+                font-size: 16px;
+                // color: #555;
+                margin-bottom: 4px;
+            }
+
+            .price-section {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .current-price {
+                    font-weight: bold;
+                    font-size: 18px;
+                }
+
+                .old-price {
+                    color: #999;
+                    text-decoration: line-through;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+// }

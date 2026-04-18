@@ -1,0 +1,122 @@
+.site-footer {
+    padding: 60px 0 30px;
+    background-color: #ffffff;
+    //   border-top: 2px solid #f0f0f0;
+    border-top: 0.8px solid #000000;
+
+    .footer-col {
+        margin-bottom: 30px;
+
+        h5 {
+            font-family: 'Playfair Display', serif; // Elegant serif for headings
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+                margin-bottom: 12px;
+
+                a {
+                    color: #666;
+                    text-decoration: none;
+                    font-size: 14px;
+                    transition: color 0.3s;
+
+                    &:hover {
+                        color: #4466ff;
+                    }
+                }
+            }
+        }
+    }
+
+    .newsletter-text {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .subscribe-input {
+        border-radius: 12px;
+        height: 44px;
+        margin-bottom: 12px;
+    }
+
+    .subscribe-btn {
+        width: 100%;
+        height: 44px;
+        border-radius: 12px;
+        background-color: #4483ff; // The specific vibrant blue from the image
+        border: none;
+        font-weight: 600;
+
+        &:hover {
+            background-color: #3371ee !important;
+        }
+    }
+
+    .social-icons {
+        margin-top: 20px;
+        display: flex;
+        gap: 20px;
+
+        .anticon {
+            font-size: 18px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+
+            &:hover {
+                color: #333;
+            }
+        }
+    }
+
+    // .footer-bottom {
+    //     margin-top: 40px;
+    //     padding-top: 20px;
+    //     border-top: 1px solid #f0f0f0;
+    //     text-align: center;
+    //     font-size: 13px;
+    //     color: #888;
+
+    //     .brand-name {
+    //         font-weight: 700;
+
+    //         .purple {
+    //             color: #6200ee;
+    //         }
+
+    //         .pink {
+    //             color: #ff007a;
+    //         }
+    //     }
+    // }
+}
+
+.footer-bottom {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+
+    .brand-name {
+        font-weight: 700;
+
+        .purple {
+            color: #6200ee;
+        }
+
+        .pink {
+            color: #ff007a;
+        }
+    }
+}

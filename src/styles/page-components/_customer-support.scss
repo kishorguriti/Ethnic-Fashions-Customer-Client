@@ -1,0 +1,75 @@
+$primary-blue: #4285f4;
+$bg-light: #fdfdfd;
+$border-color: #E2E8F0;
+$serif-font: 'Playfair Display', serif;
+
+.support-container {
+    font-family: 'Inter', sans-serif;
+
+    .main-title {
+        font-family: $serif-font;
+        font-size: 2.5rem;
+    }
+
+    .section-subtitle {
+        font-family: $serif-font;
+        font-size: 1.25rem;
+        color: #333;
+    }
+
+    .info-card,
+    .form-card,
+    .faq-card {
+        background: white;
+        border: 0.8px solid $border-color;
+        border-radius: 16px;
+    }
+
+    .contact-item {
+        .icon {
+            color: #666;
+            font-size: 1.2rem;
+            margin-right: 15px;
+            margin-top: 4px;
+        }
+
+        strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        p {
+            color: #333;
+            margin: 0;
+        }
+
+        span {
+            color: #999;
+            font-size: 0.85rem;
+        }
+    }
+
+    .chat-btn,
+    .submit-btn {
+        background-color: $primary-blue;
+        border-radius: 25px;
+        height: 45px;
+        font-weight: 500;
+    }
+
+    .support-faq {
+        .ant-collapse-item {
+            border-bottom: 0.8px solid #000 !important;
+
+            .ant-collapse-header {
+                padding: 15px 0 !important;
+                font-weight: 400;
+            }
+
+            // Target the last item within the container
+            &:last-child {
+                border-bottom: none !important;
+            }
+        }
+    }
+}

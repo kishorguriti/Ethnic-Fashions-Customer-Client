@@ -1,0 +1,241 @@
+  // The sticky wrapper containing both Banner + Header
+  @use '../../core/variables/variables' as *;
+
+  @mixin menuItemStyles {
+      .menuItem {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 0;
+          color: #555;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+              color: #3582ff;
+              transform: translateX(2px);
+              background-color: rgb(232, 245, 255);
+              font-weight: 600;
+              border-radius: 4px;
+              padding-left: 4px;
+          }
+
+          .icon {
+              font-size: 16px;
+              display: flex;
+              align-items: center;
+          }
+      }
+  }
+
+  .stickyHeaderGroup {
+      position: sticky;
+      top: 0;
+      z-index: 1100;
+      width: 100%;
+      //   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 1px 2px -1px #0000001A;
+
+      box-shadow: 0px 1px 3px 0px #0000001A;
+
+  }
+
+  .topBanner {
+      background: $Primary-gradient;
+      font-size: 13px;
+      color: white;
+      border-bottom: 0.8px solid #E2E8F0;
+      padding: 15px 16px;
+
+  }
+
+  .mainHeader {
+      background: #ffffff;
+      padding: 15px 0;
+
+      .navLinks {
+          display: flex;
+          gap: 2.5rem;
+          padding-top: 15px;
+
+          .navItem {
+              color: #555;
+              font-weight: 500;
+              font-size: 14px;
+              cursor: pointer;
+              transition: color 0.3s;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+
+              &:hover {
+                  color: $primary-purple;
+
+                  .navlink-down-arrow {
+                      transform: rotate(180deg) !important;
+                  }
+              }
+          }
+      }
+  }
+
+  .nav-links-horizental-line {
+      border-top: 0.8px solid #E2E8F0 !important;
+      display: inline-block !important;
+      width: 100% !important;
+      // padding: 16px 13px !important;
+  }
+
+  //////////////  Sarees Nav Links     //
+
+  .mega-dropdown-width {
+      z-index: 1100 !important;
+      //   margin-top: 5.9rem !important;
+
+      .megaMenuCard {
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          border-top: 3px solid #00c2cb; // Teal accent from image
+          padding: 24px;
+          min-width: 800px;
+          z-index: 1100 !important;
+          margin-top: 0.75rem !important;
+
+          .menuColumn {
+              h6 {
+                  color: #1890ff; // "By Fabric", etc.
+                  font-size: 13px;
+                  margin-bottom: 16px;
+                  font-weight: 500;
+              }
+
+              @include menuItemStyles;
+
+              //   .menuItem {
+              //       display: flex;
+              //       align-items: center;
+              //       gap: 12px;
+              //       padding: 8px 0;
+              //       color: #555;
+              //       font-size: 14px;
+              //       cursor: pointer;
+              //       transition: all 0.2s;
+
+              //       &:hover {
+              //           color: #3582ff;
+              //           transform: translateX(2px);
+              //           background-color: rgb(232, 245, 255);
+              //           font-weight: 600;
+              //           border-radius: 4px;
+              //           padding-left: 4px;
+              //       }
+
+              //       .icon {
+              //           font-size: 16px;
+              //           display: flex;
+              //           align-items: center;
+              //       }
+              //   }
+          }
+      }
+  }
+
+  // Churidar Nav Links SCSS    //
+  .churidarMegaMenu {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      border-top: 3px solid #d63384; // Pink accent from image
+      padding: 30px;
+      min-width: 750px;
+      margin-top: 12px;
+
+
+      .menuColumn {
+          h6 {
+              color: #b366ff; // Light purple title color
+              font-size: 12px;
+              font-weight: 400;
+              margin-bottom: 20px;
+              font-family: 'Playfair Display', serif; // Adjust to match your brand font
+          }
+
+          @include menuItemStyles;
+
+          //   .menuItem {
+          //       display: flex;
+          //       align-items: center;
+          //       gap: 12px;
+          //       padding: 10px 15px;
+          //       border-radius: 8px;
+          //       color: #444;
+          //       font-size: 14px;
+          //       cursor: pointer;
+          //       transition: all 0.2s ease-in-out;
+
+          //       &:hover {
+          //           background-color: #fff0f6; // Light pink hover background
+          //           color: #d63384;
+
+          //           img {
+          //               transform: scale(1.1);
+          //           }
+          //       }
+
+          //       .menuIcon {
+          //           width: 20px;
+          //           height: 20px;
+          //           object-fit: contain;
+          //           transition: transform 0.2s;
+          //       }
+          //   }
+      }
+  }
+
+  ///     Jewellary  Scss     //
+  .jewelleryMegaMenu {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      border-top: 3px solid #ff8c00; // Orange accent from image
+      padding: 30px;
+      min-width: 800px;
+      margin-top: 12px;
+
+      .menuColumn {
+          h6 {
+              color: #ffb347; // Light orange title
+              font-size: 13px;
+              font-weight: 400;
+              margin-bottom: 22px;
+              font-family: 'Playfair Display', serif;
+          }
+
+          @include menuItemStyles;
+          //   .menuItem {
+          //       display: flex;
+          //       align-items: center;
+          //       gap: 14px;
+          //       padding: 10px 12px;
+          //       border-radius: 6px;
+          //       color: #333;
+          //       font-size: 14px;
+          //       cursor: pointer;
+          //       transition: background 0.2s;
+
+          //       &:hover {
+          //           background-color: #f8f9fa; // Very light gray hover
+          //           color: #ff8c00;
+          //       }
+
+          //       .iconWrapper {
+          //           font-size: 18px;
+          //           width: 24px;
+          //           display: flex;
+          //           justify-content: center;
+          //       }
+          //   }
+      }
+  }

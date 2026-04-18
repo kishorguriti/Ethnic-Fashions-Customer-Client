@@ -1,0 +1,45 @@
+// Variables based on your image colors
+$primary-blue: #4086f4;
+$text-dark: #1a1a1a;
+$text-muted: #666666;
+$font-family-serif: 'Playfair Display', serif; // Match the "My Wishlist" serif look
+$font-family-sans: 'Inter', sans-serif;
+
+.wishlist-container {
+    //   min-height: 80vh;
+    background-color: #ffffff;
+
+    .wishlist-title {
+        font-family: $font-family-serif;
+        font-size: 1.75rem;
+        color: $text-dark;
+        font-weight: 500;
+    }
+
+    .empty-state-content {
+        // margin-top: 100px;
+        min-height: 300px;
+
+        .empty-message {
+            font-family: $font-family-sans;
+            font-size: 1rem;
+            color: $text-muted;
+        }
+
+        .continue-shopping-btn {
+            background-color: $primary-blue;
+            border-color: $primary-blue;
+            height: 48px;
+            padding: 0 40px;
+            border-radius: 24px; // Matches the rounded pill shape
+            font-weight: 500;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background-color: darken($primary-blue, 10%);
+                border-color: darken($primary-blue, 10%);
+                transform: translateY(-1px);
+            }
+        }
+    }
+}

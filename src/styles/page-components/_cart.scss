@@ -1,0 +1,92 @@
+$font-family-serif: 'Playfair Display', serif; // Match the "My Wishlist" serif look
+$font-family-sans: 'Inter', sans-serif;
+$primary-blue: #4086f4;
+$text-dark: #1a1a1a;
+$text-muted: #666666;
+
+.cart-page-wrapper {
+    // background-color: #fcfcfc;
+    //   min-height: 100vh;
+
+    .page-header {
+        font-family: 'Playfair Display', serif;
+    }
+
+    .cart-item-card {
+        border-radius: 20px;
+        border: 0.8px solid #E2E8F0 !important;
+        box-shadow: 0px 1px 3px 0px #0000001A !important;
+
+
+        .item-thumb {
+            width: 110px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .qty-selector {
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+
+            .ant-input-number-input {
+                height: 38px;
+            }
+        }
+    }
+
+    .summary-card {
+        border-radius: 24px;
+        border: 1px solid #f0f0f0;
+        padding: 10px;
+
+        .custom-input {
+            border-radius: 12px;
+            height: 42px;
+        }
+
+        .apply-btn {
+            height: 42px;
+            border-radius: 12px;
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .checkout-btn {
+            height: 50px;
+            border-radius: 15px;
+            background-color: #3b82f6;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+    }
+
+    .empty-state-content {
+        // margin-top: 100px;
+        min-height: 300px;
+
+        .empty-message {
+            font-family: $font-family-sans;
+            font-size: 1rem;
+            color: $text-muted;
+        }
+
+        .continue-shopping-btn {
+            background-color: $primary-blue;
+            border-color: $primary-blue;
+            height: 48px;
+            padding: 0 40px;
+            border-radius: 24px; // Matches the rounded pill shape
+            font-weight: 500;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background-color: darken($primary-blue, 10%);
+                border-color: darken($primary-blue, 10%);
+                transform: translateY(-1px);
+            }
+        }
+    }
+}

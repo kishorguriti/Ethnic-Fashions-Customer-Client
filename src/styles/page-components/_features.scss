@@ -1,0 +1,113 @@
+.features-section {
+    padding: 60px 0;
+    background-color: #fcfcfc;
+
+    .feature-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 32px 24px;
+        text-align: left;
+        height: 100%;
+        // border: none;
+        // Soft, wide shadow to match the image
+        transition: transform 0.3s ease;
+
+        border: 1.6px solid #F1F5F9 !important;
+
+        box-shadow: 0px 10px 15px -3px #0000001A !important;
+        // box-shadow: 0px 3px 5px 3px #0000001A !important;
+
+        &:hover {
+            transform: translateY(-5px);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-size: 20px;
+
+            // Icon Color Variants
+            &.blue {
+                background: linear-gradient(135deg, #2B7FFF 0%, #00B8DB 100%);
+                box-shadow: 0px 10px 15px -3px #0000001A;
+
+            }
+
+            &.purple {
+                background: linear-gradient(135deg, #AD46FF 0%, #F6339A 100%);
+                box-shadow: 0px 10px 15px -3px #0000001A;
+
+            }
+
+            &.green {
+                background: linear-gradient(135deg, #00C950 0%, #00BC7D 100%);
+                box-shadow: 0px 10px 15px -3px #0000001A;
+
+            }
+
+            &.orange {
+                background: linear-gradient(135deg, #FF6900 0%, #F0B100 100%);
+
+                box-shadow: 0px 10px 15px -3px #0000001A;
+
+            }
+        }
+
+        h5 {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 0;
+            line-height: 1.4;
+        }
+    }
+
+    .card-blue:hover {
+        background: linear-gradient(135deg, #2B7FFF 0%, #00B8DB 100%) !important;
+
+        h5,
+        p {
+            color: #fff;
+        }
+    }
+
+    .card-purple:hover {
+        background: linear-gradient(135deg, #AD46FF 0%, #F6339A 100%) !important;
+
+        h5,
+        p {
+            color: #fff;
+        }
+    }
+
+    .card-green:hover {
+        background: linear-gradient(135deg, #00C950 0%, #00BC7D 100%) !important;
+
+        h5,
+        p {
+            color: #fff;
+        }
+    }
+
+    .card-orange:hover {
+        background: linear-gradient(135deg, #FF6900 0%, #F0B100 100%) !important;
+
+        h5,
+        p {
+            color: #fff;
+        }
+    }
+}

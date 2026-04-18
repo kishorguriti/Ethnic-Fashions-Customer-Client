@@ -1,0 +1,70 @@
+.return-request-card {
+    border-radius: 20px;
+
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 500;
+    }
+
+    .custom-input,
+    .custom-textarea {
+        border-radius: 15px; // Matching the rounder style
+        border: 1px solid #e2e8f0;
+        padding: 10px 16px;
+
+        &:focus {
+            border-color: #3b82f6;
+        }
+    }
+
+    .custom-radio-group {
+        .ant-radio-wrapper {
+            font-size: 15px;
+            margin-bottom: 8px;
+
+            // Makes the radio circle look like the image
+            .ant-radio-inner {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+
+    .policy-info-box {
+        background-color: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+
+        ul {
+            padding-left: 0;
+            margin: 0;
+            list-style: none;
+
+            li {
+                font-size: 14px;
+                color: #64748b;
+                margin-bottom: 4px;
+                position: relative;
+
+                &::before {
+                    content: "•";
+                    margin-right: 8px;
+                }
+            }
+        }
+    }
+
+    .submit-return-btn {
+        height: 48px;
+        border-radius: 15px; // Softer rectangle/pill hybrid
+        padding: 0 30px;
+        background-color: #3b82f6;
+        font-weight: 500;
+        font-size: 15px;
+        border: none;
+
+        &:hover {
+            background-color: #2563eb;
+        }
+    }
+}

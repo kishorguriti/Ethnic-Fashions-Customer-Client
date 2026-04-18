@@ -1,0 +1,118 @@
+// AddressBook.scss
+
+.address-book-card {
+  border-radius: 20px;
+  padding: 10px;
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+  }
+
+  .add-address-btn {
+    height: 44px;
+    border-radius: 22px; // Pill shape
+    padding: 0 25px;
+    background-color: #3b82f6;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background-color: #2563eb;
+    }
+  }
+
+  .address-entry-card {
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
+    background: #fff;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .address-details span {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .default-tag {
+      background-color: #f3f4f6;
+      border: none;
+      border-radius: 12px;
+      padding: 2px 12px;
+      color: #374151;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .action-icons {
+      .icon-btn {
+        color: #64748b;
+        font-size: 18px;
+
+        &:hover {
+          color: #3b82f6;
+          background: #f8fafc;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .address-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px;
+  }
+
+  .add-address-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+/////////////////  modal styles  /////////
+/// 
+.ant-modal-wrap {
+  z-index: 1220 !important;
+
+}
+
+.custom-address-modal {
+  // z-index: 1220 !important;
+
+  .ant-modal-content {
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .ant-modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+  }
+
+  .ant-input {
+    border-radius: 12px;
+    padding: 10px 15px;
+  }
+
+  .ant-btn {
+    border-radius: 20px;
+    height: 40px;
+  }
+}
+
+// Styling the delete button specifically
+.ant-btn-dangerous {
+  &:hover {
+    background-color: #fff1f0 !important;
+  }
+}

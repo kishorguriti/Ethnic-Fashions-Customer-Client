@@ -1,0 +1,117 @@
+
+$primary-gradient: linear-gradient(135deg, #4c49f1 0%, #a44df7 100%);
+$text-muted: #6c757d;
+$border-radius-lg: 20px;
+
+.account-page-wrapper {
+  background-color: #f9f9fb;
+  padding: 30px 0;
+  min-height: 100vh;
+
+  .page-header {
+    font-family: 'Playfair Display', serif; // Essential for the "My Account" look
+    font-weight: 500;
+    margin-bottom: 30px;
+  }
+
+  .sidebar-card,
+  .main-content-card {
+    border: none;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+  }
+
+  // Sidebar Menu Customization
+  .custom-menu {
+    border-right: none !important;
+    border-inline-end: none !important;
+
+    .ant-menu-item {
+      height: 50px;
+      line-height: 50px;
+      margin: 8px 12px;
+      border-radius: 12px;
+      color: $text-muted;
+
+      &-selected {
+        background: $primary-gradient !important;
+        color: #fff !important;
+
+        .anticon {
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  // Form Styling
+  .main-content-card {
+    padding: 30px;
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 25px;
+    }
+
+    .ant-form-item-label>label {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .ant-input,
+    .ant-input-password {
+      border-radius: 20px; // Matching the rounder inputs in the image
+      padding: 10px 16px;
+      // border: 1px solid #e2e8f0;
+
+      &:focus {
+        border-color: #4c49f1;
+      }
+    }
+
+    .divider-line {
+      height: 1px;
+      background: #f0f0f0;
+      margin: 40px 0;
+    }
+
+    .pill-btn {
+      height: 45px;
+      padding: 0 35px;
+      border-radius: 25px; // Makes it a pill shape
+      font-weight: 600;
+      background-color: #3b82f6; // Precise blue from image
+      border: none;
+
+      &:hover {
+        background-color: #2563eb;
+      }
+    }
+  }
+}
+
+.change-password-section {
+
+  .ant-input,
+  .ant-input-password {
+    border-radius: 20px; // Matching the rounder inputs in the image
+    padding: 5px 16px !important;
+    // border: 1px solid #e2e8f0;
+
+    &:focus {
+      border-color: #4c49f1;
+    }
+  }
+}
+
+// Media Queries for Mobile
+@media (max-width: 991px) {
+  .account-page-wrapper {
+    padding: 30px 15px;
+  }
+
+  .sidebar-card {
+    margin-bottom: 24px;
+  }
+}
