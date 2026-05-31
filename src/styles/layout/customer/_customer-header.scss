@@ -30,15 +30,20 @@
   }
 
   .stickyHeaderGroup {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 1100;
       width: 100%;
-      //   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      box-shadow: 0px 1px 2px -1px #0000001A;
-
       box-shadow: 0px 1px 3px 0px #0000001A;
+      transform: translateY(0);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
 
+      &.header--hidden {
+          transform: translateY(-100%);
+          box-shadow: none;
+      }
   }
 
   .topBanner {
@@ -87,6 +92,24 @@
       // padding: 16px 13px !important;
   }
 
+  // User profile dropdown — must sit above the sticky header (z-index: 1100)
+  .user-profile-dropdown {
+      z-index: 1200 !important;
+
+      .ant-dropdown-menu {
+          border-radius: 10px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+          min-width: 160px;
+          padding: 4px;
+
+          .ant-dropdown-menu-item {
+              border-radius: 6px;
+              padding: 8px 14px;
+              font-size: 14px;
+          }
+      }
+  }
+
   //////////////  Sarees Nav Links     //
 
   .mega-dropdown-width {
@@ -113,34 +136,16 @@
 
               @include menuItemStyles;
 
-              //   .menuItem {
-              //       display: flex;
-              //       align-items: center;
-              //       gap: 12px;
-              //       padding: 8px 0;
-              //       color: #555;
-              //       font-size: 14px;
-              //       cursor: pointer;
-              //       transition: all 0.2s;
-
-              //       &:hover {
-              //           color: #3582ff;
-              //           transform: translateX(2px);
-              //           background-color: rgb(232, 245, 255);
-              //           font-weight: 600;
-              //           border-radius: 4px;
-              //           padding-left: 4px;
-              //       }
-
-              //       .icon {
-              //           font-size: 16px;
-              //           display: flex;
-              //           align-items: center;
-              //       }
-              //   }
+          .menuItemThumb {
+              width: 28px;
+              height: 28px;
+              border-radius: 4px;
+              object-fit: cover;
+              flex-shrink: 0;
           }
       }
   }
+}
 
   // Churidar Nav Links SCSS    //
   .churidarMegaMenu {

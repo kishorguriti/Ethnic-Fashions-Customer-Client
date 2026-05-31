@@ -1,26 +1,29 @@
 import React from "react";
-import { Card, Typography, Button, Space, Result } from "antd";
-// import { CheckCircleFilled, PackageOutlined } from '@ant-design/icons';
-import { CheckCircleFilled, InboxOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Card, Typography, Button, Tag } from "antd";
+import { CheckCircleFilled, InboxOutlined, ShoppingOutlined } from "@ant-design/icons";
+import { useNavigate, useLocation } from "react-router-dom";
+import type { OrderResult } from "../../services/orderApi";
 
 const { Title, Text } = Typography;
 
 const OrderConfirmation: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const order     = (location.state as any)?.order as OrderResult | undefined;
 
-  const orderDetails = {
-    orderNumber: "ORD-2024-9731",
-    deliveryDate: "April 15, 2026",
-    status: "Processing",
-  };
-  const handleNavigation = () => {
-    navigate("/products");
-  };
+  const orderNumber      = order?.orderNumber ?? "—";
+  const status           = order?.status      ?? "Processing";
+  const totalAmount      = order?.totalAmount;
+  const estimatedDelivery = order?.estimatedDelivery
+    ? new Date(order.estimatedDelivery).toLocaleDateString("en-IN", {
+        day: "numeric", month: "long", year: "numeric",
+      })
+    : "5–7 business days";
+
   return (
     <div className="order-confirmation-wrapper">
       <div className="container text-center py-5">
-        {/* Success Icon */}
+        {/* Success icon */}
         <div className="success-icon-container mb-4">
           <div className="outer-circle">
             <div className="inner-circle">
@@ -29,54 +32,58 @@ const OrderConfirmation: React.FC = () => {
           </div>
         </div>
 
-        <Title level={1} className="serif-title mb-3">
-          Order Confirmed!
-        </Title>
+        <Title level={1} className="serif-title mb-2">Order Confirmed!</Title>
         <Text type="secondary" className="sub-message d-block mb-5">
-          Thank you for your purchase. Your order has been confirmed and will be
-          shipped soon.
+          Thank you for your purchase. Your order has been confirmed and will be shipped soon.
         </Text>
 
-        {/* Order Details Card */}
+        {/* Order details card */}
         <Card className="order-info-card mx-auto mb-5" bordered={false}>
           <div className="d-flex align-items-center mb-4">
             <div className="package-icon-box">
               <InboxOutlined />
             </div>
             <div className="ms-3 text-start">
-              <Text type="secondary" className="small d-block">
-                Order Number
-              </Text>
-              <Text strong className="fs-5">
-                {orderDetails.orderNumber}
-              </Text>
+              <Text type="secondary" className="small d-block">Order Number</Text>
+              <Text strong className="fs-5">{orderNumber}</Text>
             </div>
           </div>
 
           <div className="detail-row d-flex justify-content-between mb-2">
             <Text type="secondary">Estimated Delivery</Text>
-            <Text strong>{orderDetails.deliveryDate}</Text>
+            <Text strong>{estimatedDelivery}</Text>
           </div>
-          <div className="detail-row d-flex justify-content-between">
+
+          <div className="detail-row d-flex justify-content-between mb-2">
             <Text type="secondary">Order Status</Text>
-            <Text type="success" strong>
-              {orderDetails.status}
-            </Text>
+            <Tag color="processing">{status}</Tag>
           </div>
+
+          {totalAmount != null && (
+            <div className="detail-row d-flex justify-content-between">
+              <Text type="secondary">Amount Paid</Text>
+              <Text strong>₹{totalAmount.toLocaleString()}</Text>
+            </div>
+          )}
         </Card>
 
-        {/* Action Buttons */}
+        {/* Action buttons */}
         <div className="action-buttons-row d-flex justify-content-center gap-3 mb-5">
-          <Button type="primary" className="track-btn">
+          <Button
+            type="primary"
+            className="track-btn"
+            icon={<ShoppingOutlined />}
+            onClick={() => navigate("/my-account/orders")}
+          >
             Track Order
           </Button>
-          <Button className="continue-btn" onClick={() => handleNavigation()}>
+          <Button className="continue-btn" onClick={() => navigate("/products")}>
             Continue Shopping
           </Button>
         </div>
 
         <Text type="secondary" className="email-footer small">
-          A confirmation email has been sent to your email address.
+          A confirmation email has been sent to your registered email address.
         </Text>
       </div>
     </div>

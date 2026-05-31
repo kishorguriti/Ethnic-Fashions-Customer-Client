@@ -1,347 +1,314 @@
-// import { useAppDispatch, useAppSelector } from "../../hooks";
-// import { updateQty, removeFromCart } from "./cartSlice";
-
-// export default function CartPage() {
-//   const cart = useAppSelector((s) => s.cart);
-//   const dispatch = useAppDispatch();
-
-//   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-//   return (
-//     <div className="container mt-4">
-//       <h2>Cart</h2>
-
-//       {cart.map((item) => (
-//         <div className="d-flex justify-content-between mb-3" key={item.id}>
-//           <div>{item.title}</div>
-
-//           <input
-//             type="number"
-//             value={item.qty}
-//             onChange={(e) =>
-//               dispatch(updateQty({ id: item.id, qty: +e.target.value }))
-//             }
-//           />
-
-//           <button
-//             className="btn btn-danger"
-//             onClick={() => dispatch(removeFromCart(item.id))}
-//           >
-//             Remove
-//           </button>
-//         </div>
-//       ))}
-
-//       <h4>Total: ₹{total}</h4>
-//     </div>
-//   );
-// }
-
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useMemo } from "react";
 import {
-  Card,
-  Typography,
-  Button,
-  Input,
-  Row,
-  Col,
-  Space,
-  InputNumber,
-  Divider,
-  message,
-  Alert,
+  Card, Typography, Button, Input, Row, Col,
+  InputNumber, Divider, message, Alert, Spin, Tag,
 } from "antd";
-import { DeleteOutlined, ShoppingCartOutlined } from "@ant-design/icons";
-// import './ShoppingCart.scss';
-import Image from "../../assets/png/EthnicHomePage_1.svg";
-import Image2 from "../../assets/png/EthnicHomePage_2.png";
-import { useCartSelector } from "../../hooks";
-import { removeFromCart, updateQty } from "./cartSlice";
-import { useDispatch } from "react-redux";
+import { DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, GiftOutlined } from "@ant-design/icons";
+import { useAppDispatch, useCartSelector } from "../../hooks";
+import { updateQty, removeFromCart, clearCart } from "./cartSlice";
+import { validateCoupon } from "../../services/couponApi";
+import type { AppliedCoupon } from "../../types/coupon";
+import AvailableCoupons from "./AvailableCoupons";
 
 const { Title, Text } = Typography;
 
-interface CartItem {
-  id: string;
-  title: string;
-  size: string;
-  color: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-// const initialItems = [
-//   {
-//     id: "1",
-//     title: "Royal Banarasi Silk Saree",
-//     image: Image,
-//     price: 8999,
-//     oldPrice: 12999,
-//     discount: "31% OFF",
-//     collection: "Wedding Collection",
-//     badgeColor: "blue",
-//     tags: ["Silk", "Banarasi"],
-//     rating: 0,
-//     reviewCount: 0,
-//     quantity: 1,
-//     color: "#000",
-//     size: "100",
-//   },
-//   {
-//     id: "2",
-//     title: "Elegant Paithani Pure Silk",
-//     image: Image2,
-//     price: 15999,
-//     oldPrice: 19999,
-//     discount: "20% OFF",
-//     collection: "Premium Collection",
-//     badgeColor: "blue",
-//     tags: ["Silk", "Paithani"],
-//     rating: 0,
-//     reviewCount: 0,
-//     quantity: 1,
-//     color: "#000",
-//     size: "100",
-//   },
-//   {
-//     id: "3",
-//     title: "Royal Banarasi Silk Saree",
-//     image: Image,
-//     price: 8999,
-//     oldPrice: 12999,
-//     discount: "31% OFF",
-//     collection: "Wedding Collection",
-//     badgeColor: "blue",
-//     tags: ["Silk", "Banarasi"],
-//     rating: 0,
-//     reviewCount: 0,
-//     quantity: 1,
-//     color: "#000",
-//     size: "100",
-//   },
-//   {
-//     id: "5",
-//     title: "Elegant Paithani Pure Silk",
-//     image: Image2,
-//     price: 15999,
-//     oldPrice: 19999,
-//     discount: "20% OFF",
-//     collection: "Premium Collection",
-//     badgeColor: "blue",
-//     tags: ["Silk", "Paithani"],
-//     rating: 0,
-//     reviewCount: 0,
-//     quantity: 1,
-//     color: "#000",
-//     size: "100",
-//   },
-// ];
 const CartPage: React.FC = () => {
-  const navigate = useNavigate();
-  const cartList = useCartSelector();
-  console.log(cartList, "CartPage cartList");
-  const dispatch = useDispatch();
-  const handleContinueShopping = () => {
-    // Navigate to your shop page
-    // console.log("Navigating to shop...");
-    navigate("/products");
-  };
-  const [items, setItems] = useState<CartItem[]>(cartList);
+  const navigate   = useNavigate();
+  const dispatch   = useAppDispatch();
+  const { items, subtotal, totalItems, loading, mutating } = useCartSelector();
 
-  const [couponCode, setCouponCode] = useState("");
-  const [isCouponInvalid, setIsCouponInvalid] = useState(false);
+  const [couponCode, setCouponCode]         = useState("");
+  const [couponLoading, setCouponLoading]   = useState(false);
+  const [couponError, setCouponError]       = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon]   = useState<AppliedCoupon | null>(null);
+  const [couponsOpen, setCouponsOpen]       = useState(false);
 
-  // --- Calculations ---
-  //   const subtotal:any = useMemo(() => items?.reduce((acc, item) => acc + (item.price * item.quantity), 0), [items]);
-  //   const shipping = 0; // Free as per image
-  //   const tax = subtotal * 0.08; // 8% Tax example
-  //   const total = subtotal + shipping + tax;
-  // --- Calculations ---
-  const subtotal = useMemo(() => {
-    // Ensure we return 0 if items is empty
-    return (
-      items?.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0
-    );
-  }, [items]);
+  const shipping     = 0;
+  const tax          = subtotal * 0.08;
+  const couponSaving = appliedCoupon?.discountAmount ?? 0;
+  const total        = subtotal - couponSaving + shipping + tax;
 
-  const shipping = 0;
-  // Calculate tax based on the safe subtotal
-  const tax = (subtotal || 0) * 0.08;
-  const total = subtotal + shipping + tax;
-
-  // --- Handlers ---
-  const updateQuantity = (id: string, val: number | null) => {
-    if (val === null) return;
-    dispatch(updateQty({ id: id, quantity: val }));
-    setItems((prev: any) =>
-      prev.map((item: any) =>
-        item.id === id ? { ...item, quantity: val } : item,
-      ),
-    );
+  const handleUpdateQty = (variantId: string, val: number | null) => {
+    if (!val || val < 1) return;
+    dispatch(updateQty({ variantId, quantity: val }));
   };
 
-  const removeItem = (id: string) => {
-    dispatch(removeFromCart(id));
-    setItems((prev: any) => prev.filter((item: any) => item?.id !== id));
-    message.success("Item removed from cart");
+  const handleRemove = (variantId: string) => {
+    dispatch(removeFromCart(variantId)).then(() => message.success("Item removed"));
+    // If a coupon was applied, its validity may change — clear it so user re-validates
+    if (appliedCoupon) {
+      setAppliedCoupon(null);
+      setCouponCode("");
+    }
+  };
+
+  // Shared apply logic — called by both the inline input and the coupons drawer
+  const applyCode = async (code: string) => {
+    setCouponLoading(true);
+    setCouponError(null);
+    try {
+      const result = await validateCoupon(code.trim().toUpperCase(), subtotal);
+      setAppliedCoupon(result);
+      setCouponCode(result.code);
+      message.success(`Coupon applied! You save ₹${result.discountAmount.toLocaleString()}`);
+    } catch (err: any) {
+      setCouponError(err.response?.data?.message || "Invalid or expired coupon");
+      setAppliedCoupon(null);
+      throw err; // re-throw so the drawer can handle loading state
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
   const handleApplyCoupon = () => {
-    if (couponCode !== "SAVE10") {
-      setIsCouponInvalid(true);
-    } else {
-      setIsCouponInvalid(false);
-      message.success("Coupon applied!");
-    }
+    if (!couponCode.trim()) return;
+    applyCode(couponCode);
   };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 400 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!items.length) {
+    return (
+      <div className="wishlist-container container d-flex flex-column align-items-center justify-content-center">
+        <div className="text-start w-100 py-4">
+          <Title level={2}>Shopping Cart</Title>
+        </div>
+        <div className="empty-state-content text-center d-flex flex-column align-items-center my-4 py-4">
+          <p className="empty-message mb-4">Your Cart is empty</p>
+          <Button type="primary" size="large" onClick={() => navigate("/products")}>
+            Continue Shopping
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="cart-page-wrapper py-4">
       <div className="container">
         <Title level={2} className="page-header mb-4">
           Shopping Cart
+          <Text type="secondary" className="ms-2 fs-6 fw-normal">
+            ({totalItems} item{totalItems !== 1 ? "s" : ""})
+          </Text>
         </Title>
-        {items?.length > 0 ? (
-          <Row gutter={24}>
-            {/* Cart Items List */}
-            <Col xs={24} lg={16}>
-              {items?.map((item) => (
-                <Card
-                  key={item.id}
-                  className="cart-item-card mb-3"
-                  bordered={false}
-                >
-                  <div className="d-flex align-items-center">
+
+        <Row gutter={24}>
+          {/* ── Cart Items ── */}
+          <Col xs={24} lg={16}>
+            {items.map((item) => {
+              const v   = item.variant;
+              const pid = v._id;
+
+              return (
+                <Card key={pid} className="cart-item-card mb-3" bordered={false}>
+                  <div className="d-flex align-items-start">
                     <img
-                      src={item.image}
-                      alt={item.title}
-                      className="item-thumb"
+                      src={v.media[0]?.url}
+                      alt={item.product.name}
+                      style={{ width: 100, height: 120, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
                     />
+
                     <div className="item-details flex-grow-1 ms-4">
-                      <Text strong className="d-block fs-5">
-                        {item.title}
+                      <Text
+                        strong className="d-block fs-5 cursor-pointer"
+                        onClick={() => navigate(`/products/${item.product.slug}`)}
+                      >
+                        {item.product.name}
                       </Text>
                       <Text type="secondary" className="d-block mb-2">
-                        Size: {item.size} | Color: {item.color}
+                        {v.size ? `Size: ${v.size} | ` : ""}Color: {v.color}
                       </Text>
-                      <Title level={4} className="m-0">
-                        ${item.price.toFixed(2)}
-                      </Title>
+
+                      <div className="d-flex align-items-center gap-2 flex-wrap">
+                        <Title level={4} className="m-0">
+                          ₹{v.effectivePrice.toLocaleString()}
+                        </Title>
+                        {v.mrp > v.effectivePrice && (
+                          <Text delete type="secondary" className="small">
+                            ₹{v.mrp.toLocaleString()}
+                          </Text>
+                        )}
+                        {v.appliedOffer && (
+                          <Tag color="volcano" className="m-0">{v.appliedOffer.title}</Tag>
+                        )}
+                        {v.offerSaving > 0 && (
+                          <Text type="success" className="small">
+                            Save ₹{v.offerSaving.toLocaleString()}
+                          </Text>
+                        )}
+                      </div>
+
+                      {!v.inStock && <Tag color="warning" className="mt-1">Out of Stock</Tag>}
+
                       <div className="mt-3">
                         <InputNumber
                           min={1}
+                          max={v.available}
                           value={item.quantity}
-                          onChange={(val) => updateQuantity(item.id, val)}
+                          disabled={mutating}
+                          onChange={(val) => handleUpdateQty(pid, val)}
                           className="qty-selector"
                         />
                       </div>
                     </div>
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeItem(item.id)}
-                    />
+
+                    <div className="d-flex flex-column align-items-end ms-3">
+                      <Text strong>₹{item.lineTotal.toLocaleString()}</Text>
+                      <Button
+                        type="text" danger icon={<DeleteOutlined />}
+                        className="mt-2" disabled={mutating}
+                        onClick={() => handleRemove(pid)}
+                      />
+                    </div>
                   </div>
                 </Card>
-              ))}
-            </Col>
+              );
+            })}
 
-            {/* Order Summary */}
-            <Col xs={24} lg={8}>
-              <Card className="summary-card" bordered={false}>
-                <Title level={4} className="mb-4">
-                  Order Summary
-                </Title>
+            <Button danger type="text" disabled={mutating} onClick={() => dispatch(clearCart())}>
+              Clear Cart
+            </Button>
+          </Col>
 
-                <div className="coupon-section mb-4">
-                  <Text strong className="d-block mb-2">
-                    Have a coupon?
-                  </Text>
-                  <div className="d-flex gap-2">
-                    <Input
-                      placeholder="Enter code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
-                      className="custom-input"
-                    />
-                    <Button className="apply-btn" onClick={handleApplyCoupon}>
-                      Apply
-                    </Button>
-                  </div>
-                  <Text type="secondary" className="small mt-1 d-block">
-                    Try: SAVE10
-                  </Text>
-                </div>
+          {/* ── Order Summary ── */}
+          <Col xs={24} lg={8}>
+            <Card className="summary-card" bordered={false}>
+              <Title level={4} className="mb-4">Order Summary</Title>
 
-                <div className="price-breakdown">
-                  <div className="d-flex justify-content-between mb-2">
-                    <Text type="secondary">Subtotal</Text>
-                    <Text strong>${subtotal.toFixed(2)}</Text>
-                  </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <Text type="secondary">Shipping</Text>
-                    <Text type="success">FREE</Text>
-                  </div>
-                  <div className="d-flex justify-content-between mb-4">
-                    <Text type="secondary">Tax</Text>
-                    <Text strong>${tax.toFixed(2)}</Text>
-                  </div>
-
-                  {isCouponInvalid && (
-                    <Alert
-                      message="Invalid coupon code"
-                      type="error"
-                      showIcon
-                      className="mb-3"
-                    />
-                  )}
-
-                  <Button type="primary" block className="checkout-btn">
-                    Proceed to Checkout
+              {/* ── Coupon section ── */}
+              <div className="coupon-section mb-4">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <Text strong>Have a coupon?</Text>
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<GiftOutlined />}
+                    style={{ padding: 0, fontSize: 12 }}
+                    onClick={() => setCouponsOpen(true)}
+                  >
+                    View offers
                   </Button>
                 </div>
-              </Card>
-            </Col>
-          </Row>
-        ) : (
-          <div className="empty-state-content text-center d-flex flex-column align-items-center my-4 py-4">
-            <p className="empty-message mb-4">Your Cart is empty</p>
-            <Button
-              type="primary"
-              size="large"
-              className="continue-shopping-btn"
-              onClick={handleContinueShopping}
-            >
-              Continue Shopping
-            </Button>
-          </div>
-        )}
+
+                {appliedCoupon ? (
+                  <div
+                    className="d-flex align-items-center justify-content-between p-2"
+                    style={{ background: "#f6ffed", border: "1px solid #b7eb8f", borderRadius: 6 }}
+                  >
+                    <div>
+                      <CheckCircleOutlined style={{ color: "#52c41a" }} className="me-2" />
+                      <Text strong style={{ color: "#52c41a" }}>{appliedCoupon.code}</Text>
+                      <Text type="secondary" className="small ms-2">
+                        — Save ₹{appliedCoupon.discountAmount.toLocaleString()}
+                      </Text>
+                    </div>
+                    <Button
+                      type="text" size="small" danger
+                      icon={<CloseCircleOutlined />}
+                      onClick={handleRemoveCoupon}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="d-flex gap-2">
+                      <Input
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(null); }}
+                        onPressEnter={handleApplyCoupon}
+                        className="custom-input"
+                        style={{ textTransform: "uppercase" }}
+                      />
+                      <Button
+                        className="apply-btn"
+                        loading={couponLoading}
+                        disabled={!couponCode.trim()}
+                        onClick={handleApplyCoupon}
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                    {couponError && (
+                      <Text type="danger" className="small d-block mt-1">{couponError}</Text>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* ── Price breakdown ── */}
+              <div className="price-breakdown">
+                <div className="d-flex justify-content-between mb-2">
+                  <Text type="secondary">Subtotal</Text>
+                  <Text strong>₹{subtotal.toLocaleString()}</Text>
+                </div>
+
+                {couponSaving > 0 && (
+                  <div className="d-flex justify-content-between mb-2">
+                    <Text type="secondary">Coupon ({appliedCoupon!.code})</Text>
+                    <Text type="success">− ₹{couponSaving.toLocaleString()}</Text>
+                  </div>
+                )}
+
+                <div className="d-flex justify-content-between mb-2">
+                  <Text type="secondary">Shipping</Text>
+                  <Text type="success">FREE</Text>
+                </div>
+                <div className="d-flex justify-content-between mb-4">
+                  <Text type="secondary">Tax (8%)</Text>
+                  <Text strong>₹{tax.toFixed(0)}</Text>
+                </div>
+
+                <Divider className="my-3" />
+
+                <div className="d-flex justify-content-between mb-4">
+                  <Text strong className="fs-6">Total</Text>
+                  <Text strong className="fs-6">₹{Math.max(0, total).toFixed(0)}</Text>
+                </div>
+
+                {couponSaving > 0 && (
+                  <Alert
+                    type="success"
+                    showIcon
+                    className="mb-3"
+                    message={<span>You're saving <strong>₹{couponSaving.toLocaleString()}</strong> on this order!</span>}
+                  />
+                )}
+
+                <Button
+                  type="primary" block className="checkout-btn"
+                  onClick={() => navigate("/checkout")}
+                >
+                  Proceed to Checkout
+                </Button>
+              </div>
+            </Card>
+          </Col>
+        </Row>
       </div>
+
+      <AvailableCoupons
+        open={couponsOpen}
+        onClose={() => setCouponsOpen(false)}
+        cartSubtotal={subtotal}
+        appliedCoupon={appliedCoupon}
+        onApply={applyCode}
+      />
     </div>
   );
-
-  // return (
-  //   <div className="wishlist-container container d-flex flex-column align-items-center justify-content-center">
-  //     <div className="text-start w-100 py-4">
-  //       <h1 className="wishlist-title">Shopping Cart</h1>
-  //     </div>
-
-  //     <div className="empty-state-content text-center d-flex flex-column align-items-center my-4 py-4">
-  //       <p className="empty-message mb-4">Your Cart is empty</p>
-  //       <Button
-  //         type="primary"
-  //         size="large"
-  //         className="continue-shopping-btn"
-  //         onClick={handleContinueShopping}
-  //       >
-  //         Continue Shopping
-  //       </Button>
-  //     </div>
-  //   </div>
-  // );
 };
 
 export default CartPage;

@@ -6,6 +6,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import CartPage from "../features/cart/CartPage";
 import CustomerLayout from "../components/layout/customer/CustomerLayout";
 import ProductCollection from "../features/products/ProductCollection";
+import ProductDetail from "../pages/customer/ProductDetail";
+import Login from "../pages/customer/Login";
+import Register from "../pages/customer/Register";
 import Wishlist from "../features/wishlist/Wishlist";
 import CustomerSupport from "../features/customer-support/CustomerSupport";
 import MyAccount from "../pages/customer/account";
@@ -28,9 +31,17 @@ export default function AppRoutes() {
         <Route index element={<Home />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="products" element={<ProductCollection />} />
+        <Route path="products/:slug" element={<ProductDetail />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="customer-support" element={<CustomerSupport />} />
-        <Route path="my-account" element={<MyAccount />}>
+        <Route
+          path="my-account"
+          element={
+            <ProtectedRoute role="customer">
+              <MyAccount />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<CustomerProfile />} />
           <Route path="address" element={<AddressBook />} />
           <Route path="orders" element={<MyOrders />} />
@@ -40,7 +51,8 @@ export default function AppRoutes() {
         </Route>
         <Route path="checkout" element={<Checkout />} />
         <Route path="order-placed" element={<OrderConfirmation />} />
-        
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
       </Route>
       {/* Admin Routes */}
       <Route

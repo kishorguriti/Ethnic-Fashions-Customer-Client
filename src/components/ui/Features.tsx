@@ -16,7 +16,7 @@ interface FeatureItem {
 const features: FeatureItem[] = [
   {
     title: "Free Shipping",
-    description: "On orders above ₹1000",
+    description: "On orders above ₹3000",
     icon: <CarOutlined />,
     colorClass: "blue",
   },

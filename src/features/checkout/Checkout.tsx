@@ -1,60 +1,109 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Card,
-  Steps,
-  Typography,
-  Button,
-  Row,
-  Col,
-  Badge,
-  Radio,
-  Divider,
-  Space,
+  Card, Steps, Typography, Button, Row, Col,
+  Divider, Space, Skeleton, Tag, message,
 } from "antd";
 import {
-  TruckOutlined,
-  WalletOutlined,
-  LockOutlined,
-  CheckCircleFilled,
-  PlusOutlined,
-  SafetyCertificateOutlined,
+  TruckOutlined, CreditCardOutlined, LockOutlined,
+  CheckCircleFilled, SafetyCertificateOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../hooks";
+import { getAddresses, addAddressApi } from "../../services/customerApi";
+import { placeOrder } from "../../services/orderApi";
+import type { Address, AddressPayload } from "../../types/address";
+import type { PlaceOrderPayload } from "../../services/orderApi";
 import DeliveryStep from "./DeliveryStep";
 import PaymentStep from "./PaymentStep";
-import Image from "../../assets/png/EthnicHomePage_1.svg";
 import ReviewStep from "./ReviewStep";
-import { useNavigate } from "react-router-dom";
+import AddressStep from "./AddressStep";
 
 const { Title, Text } = Typography;
 
-const CheckoutPage: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selectedAddr, setSelectedAddr] = useState("1");
-  const navigate = useNavigate();
-  const addresses = [
-    {
-      id: "1",
-      name: "John Doe",
-      isDefault: true,
-      address: "123 Fashion Street, New York, NY 10001",
-      phone: "+1 234 567 8900",
-    },
-    {
-      id: "2",
-      name: "John Doe",
-      isDefault: false,
-      address: "456 Style Avenue, Los Angeles, CA 90001",
-      phone: "+1 234 567 8901",
-    },
-  ];
+const STEPS = ["Shipping", "Delivery", "Payment", "Review"];
 
-  const handlePlaceOrder = () => {
-    navigate('/order-placed')
+const CheckoutPage: React.FC = () => {
+  const navigate  = useNavigate();
+  const cartState = useAppSelector((s) => s.cart);
+  const { items, subtotal, totalItems } = cartState as any;
+
+  // ── Step state ────────────────────────────────────────────────────────────
+  const [step, setStep]           = useState(0);
+
+  // ── Address state ─────────────────────────────────────────────────────────
+  const [addresses, setAddresses]         = useState<Address[]>([]);
+  const [addrLoading, setAddrLoading]     = useState(true);
+  const [selectedAddrId, setSelectedAddrId] = useState<string>("");
+
+  // ── Delivery / payment ────────────────────────────────────────────────────
+  const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express">("standard");
+  const [shippingCost, setShippingCost]     = useState(0);
+  const [paymentMethod, setPaymentMethod]   = useState<PlaceOrderPayload["paymentMethod"]>("cod");
+
+  // ── Place order ───────────────────────────────────────────────────────────
+  const [placing, setPlacing] = useState(false);
+
+  // ── Load addresses on mount ───────────────────────────────────────────────
+  useEffect(() => {
+    getAddresses()
+      .then((list) => {
+        setAddresses(list);
+        const def = list.find((a) => a.isDefault) ?? list[0];
+        if (def) setSelectedAddrId(def._id);
+      })
+      .catch(() => {})
+      .finally(() => setAddrLoading(false));
+  }, []);
+
+  const handleAddAddress = async (payload: AddressPayload) => {
+    const updated = await addAddressApi(payload);
+    setAddresses(updated);
+    const newest = updated[updated.length - 1];
+    if (newest) setSelectedAddrId(newest._id);
   };
+
+  // ── Step validation ───────────────────────────────────────────────────────
+  const canContinue = () => {
+    if (step === 0) return !!selectedAddrId;
+    return true;
+  };
+
+  const handleContinue = () => {
+    if (!canContinue()) {
+      message.warning("Please select a delivery address");
+      return;
+    }
+    setStep((s) => Math.min(s + 1, 3));
+  };
+
+  // ── Place order ───────────────────────────────────────────────────────────
+  const handlePlaceOrder = async () => {
+    if (!selectedAddrId) { message.error("No address selected"); return; }
+    setPlacing(true);
+    try {
+      const result = await placeOrder({
+        addressId:      selectedAddrId,
+        deliveryMethod,
+        paymentMethod,
+      });
+      navigate("/order-placed", { state: { order: result } });
+    } catch (err: any) {
+      message.error(err.response?.data?.message || "Failed to place order. Try again.");
+    } finally {
+      setPlacing(false);
+    }
+  };
+
+  // ── Derived totals ────────────────────────────────────────────────────────
+  const tax   = (subtotal ?? 0) * 0.08;
+  const total = (subtotal ?? 0) + shippingCost + tax;
+
+  const selectedAddress = addresses.find((a) => a._id === selectedAddrId) ?? null;
 
   return (
     <div className="secure-checkout-container">
       <div className="container py-5">
+        {/* Header */}
         <header className="checkout-header mb-4">
           <Title level={2}>Secure Checkout</Title>
           <Text type="secondary">
@@ -62,140 +111,82 @@ const CheckoutPage: React.FC = () => {
           </Text>
         </header>
 
-        {/* --- Progress Steps --- */}
+        {/* Progress Steps */}
         <Card className="steps-outer-card mb-4" bordered={false}>
           <Steps
-            current={currentStep}
+            current={step}
             responsive={false}
-            items={[
-              {
-                title: "Shipping",
-                icon: (
-                  <div className="step-icon-inner">
-                    <TruckOutlined />
-                  </div>
-                ),
-              },
-              {
-                title: "Delivery",
-                icon: (
-                  <div className="step-icon-inner">
-                    <WalletOutlined />
-                  </div>
-                ),
-              },
-              {
-                title: "Payment",
-                icon: (
-                  <div className="step-icon-inner">
-                    <LockOutlined />
-                  </div>
-                ),
-              },
-              {
-                title: "Review",
-                icon: (
-                  <div className="step-icon-inner">
-                    <CheckCircleFilled />
-                  </div>
-                ),
-              },
-            ]}
+            items={STEPS.map((title, i) => ({
+              title,
+              icon: (
+                <div className="step-icon-inner">
+                  {i === 0 && <TruckOutlined />}
+                  {i === 1 && <TruckOutlined />}
+                  {i === 2 && <CreditCardOutlined />}
+                  {i === 3 && <CheckCircleFilled />}
+                </div>
+              ),
+            }))}
           />
         </Card>
 
-        {/* {currentStep === 0 && ( */}
         <Row gutter={24}>
+          {/* ── Left: active step ── */}
           <Col xs={24} lg={16}>
-            {currentStep === 0 && (
-              <Card className="selection-main-card" bordered={false}>
-                <div className="section-title-row mb-4">
-                  <TruckOutlined className="blue-icon" />
-                  <Title level={4} className="m-0 ms-2">
-                    Shipping Address
-                  </Title>
-                </div>
-
-                {/* --- Address Selection Logic --- */}
-                <div className="address-list">
-                  {addresses.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`address-option-card ${selectedAddr === item.id ? "active" : ""}`}
-                      onClick={() => setSelectedAddr(item.id)}
-                    >
-                      <div className="d-flex justify-content-between align-items-start">
-                        <div className="d-flex align-items-center">
-                          <Radio checked={selectedAddr === item.id} />
-                          <div className="ms-3">
-                            <Text strong className="name-label">
-                              {item.name}
-                            </Text>
-                            {item.isDefault && (
-                              <Badge
-                                count="Default"
-                                className="ms-2 default-badge"
-                              />
-                            )}
-                            <div className="addr-details mt-1">
-                              <Text type="secondary" className="d-block">
-                                {item.address}
-                              </Text>
-                              <Text type="secondary" className="d-block mt-1">
-                                <span className="phone-icon">✆</span>{" "}
-                                {item.phone}
-                              </Text>
-                            </div>
-                          </div>
-                        </div>
-                        {selectedAddr === item.id && (
-                          <CheckCircleFilled className="active-check-icon" />
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <Button
-                  type="dashed"
-                  icon={<PlusOutlined />}
-                  className="add-new-btn mt-3"
-                >
-                  Add New Address
-                </Button>
-              </Card>
+            {step === 0 && (
+              addrLoading
+                ? <Card bordered={false}><Skeleton active paragraph={{ rows: 4 }} /></Card>
+                : <AddressStep
+                    addresses={addresses}
+                    selectedId={selectedAddrId}
+                    onSelect={setSelectedAddrId}
+                    onAdd={handleAddAddress}
+                  />
             )}
-            {currentStep === 1 && <DeliveryStep />}
-            {currentStep === 2 && <PaymentStep />}
-            {currentStep === 3 && <ReviewStep />}
+            {step === 1 && (
+              <DeliveryStep
+                selected={deliveryMethod}
+                onChange={(method, cost) => { setDeliveryMethod(method as any); setShippingCost(cost); }}
+              />
+            )}
+            {step === 2 && (
+              <PaymentStep
+                selected={paymentMethod}
+                onChange={(m) => setPaymentMethod(m as any)}
+              />
+            )}
+            {step === 3 && (
+              <ReviewStep
+                address={selectedAddress}
+                deliveryMethod={deliveryMethod}
+                shippingCost={shippingCost}
+                paymentMethod={paymentMethod}
+                items={items ?? []}
+                subtotal={subtotal ?? 0}
+              />
+            )}
 
-            <div
-              className={`action-row mt-4 d-flex ${currentStep !== 0 ? "justify-content-between" : "justify-content-end"}`}
-            >
-              {currentStep !== 0 && (
-                <Button
-                  className="back-btn"
-                  onClick={() => setCurrentStep((prev) => prev - 1)}
-                >
+            {/* Nav buttons */}
+            <div className={`action-row mt-4 d-flex ${step > 0 ? "justify-content-between" : "justify-content-end"}`}>
+              {step > 0 && (
+                <Button className="back-btn" onClick={() => setStep((s) => s - 1)}>
                   Back
                 </Button>
               )}
-              {currentStep !== 3 && (
+              {step < 3 ? (
                 <Button
                   type="primary"
                   className="checkout-continue-btn"
-                  onClick={() =>
-                    setCurrentStep((prev) => Math.min(prev + 1, 3))
-                  }
+                  onClick={handleContinue}
                 >
                   Continue
                 </Button>
-              )}
-              {currentStep === 3 && (
+              ) : (
                 <Button
                   type="primary"
                   className="checkout-continue-btn"
-                  onClick={() => handlePlaceOrder()}
+                  loading={placing}
+                  onClick={handlePlaceOrder}
                 >
                   Place Order
                 </Button>
@@ -203,51 +194,68 @@ const CheckoutPage: React.FC = () => {
             </div>
           </Col>
 
-          {/* --- Summary Sidebar --- */}
+          {/* ── Right: order summary sidebar ── */}
           <Col xs={24} lg={8}>
             <Card className="order-summary-card" bordered={false}>
-              <Title level={4} className="mb-4">
+              <Title level={4} className="mb-3">
                 Order Summary
+                {totalItems > 0 && (
+                  <Tag color="purple" className="ms-2" style={{ fontSize: 12 }}>
+                    {totalItems} item{totalItems !== 1 ? "s" : ""}
+                  </Tag>
+                )}
               </Title>
 
-              <div className="cart-preview-item d-flex gap-3 mb-4">
-                <div className="product-img-box">
-                  <img src={Image} alt="item" />
-                </div>
-                <div className="flex-grow-1">
-                  <Text strong className="d-block">
-                    Royal Banarasi Silk Saree
-                  </Text>
-                  <Text type="secondary" className="small">
-                    Qty: 1
-                  </Text>
-                </div>
-                <Text strong>$8999.00</Text>
+              {/* Cart items preview */}
+              <div style={{ maxHeight: 280, overflowY: "auto" }} className="mb-3">
+                {(items ?? []).map((item: any) => (
+                  <div key={item.variant._id} className="cart-preview-item d-flex gap-3 mb-3">
+                    <div className="product-img-box" style={{ flexShrink: 0 }}>
+                      <img
+                        src={item.variant.media[0]?.url}
+                        alt={item.product.name}
+                        style={{ width: 60, height: 72, objectFit: "cover", borderRadius: 8 }}
+                      />
+                    </div>
+                    <div className="flex-grow-1">
+                      <Text strong className="d-block" style={{ fontSize: 13, lineHeight: 1.3 }}>
+                        {item.product.name}
+                      </Text>
+                      <Text type="secondary" className="small d-block">
+                        {item.variant.size ? `Size: ${item.variant.size} · ` : ""}
+                        Color: {item.variant.color}
+                      </Text>
+                      <Text type="secondary" className="small">Qty: {item.quantity}</Text>
+                    </div>
+                    <Text strong style={{ whiteSpace: "nowrap", fontSize: 13 }}>
+                      ₹{item.lineTotal.toLocaleString()}
+                    </Text>
+                  </div>
+                ))}
               </div>
 
+              <Divider className="my-2" />
+
+              {/* Price breakdown */}
               <div className="price-details">
                 <div className="price-line">
                   <Text type="secondary">Subtotal</Text>
-                  <Text strong>$8999.00</Text>
+                  <Text strong>₹{(subtotal ?? 0).toLocaleString()}</Text>
                 </div>
                 <div className="price-line">
                   <Text type="secondary">Shipping</Text>
-                  <Text type="success" strong>
-                    FREE
-                  </Text>
+                  {shippingCost > 0
+                    ? <Text strong>₹{shippingCost.toLocaleString()}</Text>
+                    : <Text type="success" strong>FREE</Text>}
                 </div>
                 <div className="price-line">
                   <Text type="secondary">Tax (8%)</Text>
-                  <Text strong>$719.92</Text>
+                  <Text strong>₹{tax.toFixed(0)}</Text>
                 </div>
                 <Divider className="my-3" />
                 <div className="total-line d-flex justify-content-between">
-                  <Title level={3} className="m-0">
-                    Total
-                  </Title>
-                  <Title level={3} className="m-0 total-amount">
-                    $9718.92
-                  </Title>
+                  <Title level={4} className="m-0">Total</Title>
+                  <Title level={4} className="m-0 total-amount">₹{total.toFixed(0)}</Title>
                 </div>
               </div>
 
@@ -257,20 +265,16 @@ const CheckoutPage: React.FC = () => {
                     <LockOutlined className="me-2" /> Secure SSL Encryption
                   </Text>
                   <Text type="secondary" className="small">
-                    <TruckOutlined className="me-2" /> Free Returns within 30
-                    days
+                    <TruckOutlined className="me-2" /> Free Returns within 30 days
                   </Text>
                   <Text type="secondary" className="small">
-                    <SafetyCertificateOutlined className="me-2" /> 100%
-                    Authentic Products
+                    <SafetyCertificateOutlined className="me-2" /> 100% Authentic Products
                   </Text>
                 </Space>
               </div>
             </Card>
           </Col>
         </Row>
-        {/* )} */}
-        {/* {currentStep === 1 && <DeliveryStep />} */}
       </div>
     </div>
   );

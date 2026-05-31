@@ -1,10 +1,14 @@
-// src/types/auth.ts
-export type Role = "admin" | "customer";
+export interface CustomerUser {
+  _id?: string;
+  id?: string;
+  phone: string;
+  email?: string;
+  name?: string;
+  isPhoneVerified: boolean;
+}
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  token: string;
+export interface AuthState {
+  user: CustomerUser | null;
+  loading: boolean;
+  error: string | null;
 }
