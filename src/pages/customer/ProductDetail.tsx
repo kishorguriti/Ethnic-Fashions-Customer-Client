@@ -68,11 +68,26 @@ const ProductDetail = () => {
       }, []);
   }, [product]);
 
+  // Standard size order — variants come back in DB insertion order, not size order
+  const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+
   const sizesForColor = useMemo(() => {
     if (!product) return [];
-    return product.variants
+    const seen = new Set<string>();
+    const sizes: string[] = [];
+    product.variants
       .filter((v) => v.isActive && v.color === selectedColor && v.size)
-      .map((v) => v.size as string);
+      .forEach((v) => {
+        if (!seen.has(v.size!)) { seen.add(v.size!); sizes.push(v.size!); }
+      });
+    return sizes.sort((a, b) => {
+      const ai = SIZE_ORDER.indexOf(a);
+      const bi = SIZE_ORDER.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
   }, [product, selectedColor]);
 
   const selectedVariant = useMemo(() => {
@@ -89,9 +104,12 @@ const ProductDetail = () => {
 
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
-    const firstSize =
-      product?.variants.find((v) => v.color === color && v.size)?.size ?? null;
-    setSelectedSize(firstSize);
+    // Keep current size if available in the new color, otherwise fall back to first available
+    const sameSize = selectedSize
+      ? product?.variants.find((v) => v.isActive && v.color === color && v.size === selectedSize)?.size
+      : null;
+    const fallback = product?.variants.find((v) => v.isActive && v.color === color && v.size)?.size ?? null;
+    setSelectedSize(sameSize ?? fallback);
     setActiveImageIndex(0);
   };
 

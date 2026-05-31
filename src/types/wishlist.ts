@@ -7,8 +7,8 @@ export interface WishlistVariant {
   mrp: number;
   sellingPrice: number;
   discount: number;
-  effectivePrice: number;
-  offerSaving: number;
+  effectivePrice?: number;   // not always present — fall back to sellingPrice
+  offerSaving?: number;
   available: number;
   inStock: boolean;
   media: ProductMedia[];
@@ -20,14 +20,14 @@ export interface WishlistProduct {
   name: string;
   slug: string;
   brand?: string;
-  attributes: Record<string, string>;
+  attributes?: Record<string, string>;
   category: { _id: string; name: string; slug: string };
 }
 
 export interface WishlistItem {
   _id: string;
-  product: WishlistProduct;
-  variant: WishlistVariant;
+  product: WishlistProduct | null;   // null when product is deleted
+  variant: WishlistVariant | null;   // null when variant is deleted
   createdAt: string;
 }
 

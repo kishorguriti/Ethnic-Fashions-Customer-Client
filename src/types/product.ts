@@ -64,6 +64,7 @@ export interface ProductListResponse {
 export interface ProductFilters {
   category?: string;
   color?: string;
+  size?: string;
   minPrice?: number;
   maxPrice?: number;
   inStock?: boolean;

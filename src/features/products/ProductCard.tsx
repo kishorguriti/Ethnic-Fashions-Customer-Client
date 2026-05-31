@@ -26,9 +26,14 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const displayPrice    = displayVariant?.effectivePrice ?? displayVariant?.sellingPrice ?? 0;
   const displayDiscount = displayVariant?.totalDiscount  ?? displayVariant?.discount ?? 0;
 
+  // If the product has size variants, Quick Add should go to the detail page
+  // so the customer can choose their size — not blindly add the first variant.
+  const hasSizes = product.variants.some((v) => v.size);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!displayVariant) return;
+    if (hasSizes) { navigate(`/products/${product.slug}`); return; }
     if (!user) { navigate("/login"); return; }
     dispatch(addToCart({ variantId: displayVariant._id, quantity: 1 }))
       .unwrap()
@@ -84,7 +89,7 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
           <div className="quick-add-container px-3">
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
               <Icon icon="system-uicons:cart" width="24" height="24" className="me-2" />
-              Quick Add
+              {hasSizes ? "Select Size" : "Quick Add"}
             </button>
           </div>
         )}

@@ -32,11 +32,25 @@ const Header = () => {
 
   const [openKey, setOpenKey]   = useState<string | null>(null);
   const [headerHidden, setHeaderHidden] = useState(false);
-  const lastScrollY = useRef(0);
+  const lastScrollY  = useRef(0);
+  const headerRef    = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  // Measure real header height and expose as CSS variable used by layout + banner
+  useEffect(() => {
+    const measure = () => {
+      if (headerRef.current) {
+        const h = headerRef.current.offsetHeight;
+        document.documentElement.style.setProperty("--header-h", `${h}px`);
+      }
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   // Hide on scroll-down, reveal on scroll-up
   useEffect(() => {
@@ -139,7 +153,7 @@ const Header = () => {
   };
 
   return (
-    <div className={`stickyHeaderGroup${headerHidden ? " header--hidden" : ""}`}>
+    <div ref={headerRef} className={`stickyHeaderGroup${headerHidden ? " header--hidden" : ""}`}>
       {/* Top Banner */}
       <div className="topBanner">
         <div className="container d-flex justify-content-between align-items-center">

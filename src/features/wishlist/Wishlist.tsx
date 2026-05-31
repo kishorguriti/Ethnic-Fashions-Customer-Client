@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Tag, Typography, Spin, message } from "antd";
 import { HeartFilled, ShoppingCartOutlined } from "@ant-design/icons";
 import { useAppDispatch, useWishlistSelector } from "../../hooks";
-import { toggleWishlist } from "./wishlistSlice";
+import { fetchWishlist, toggleWishlist } from "./wishlistSlice";
 import { addToCart } from "../cart/cartSlice";
 
 const { Text, Title } = Typography;
@@ -12,6 +12,11 @@ const Wishlist: React.FC = () => {
   const navigate  = useNavigate();
   const dispatch  = useAppDispatch();
   const { items, total, loading, toggling } = useWishlistSelector();
+
+  // Always fetch fresh data when the page is opened
+  useEffect(() => {
+    dispatch(fetchWishlist());
+  }, [dispatch]);
 
   const handleRemove = (variantId: string) => {
     dispatch(toggleWishlist({ variantId, isWishlisted: true }))
@@ -38,7 +43,9 @@ const Wishlist: React.FC = () => {
       <div className="d-flex align-items-center justify-content-between mb-4">
         <Title level={2} className="m-0">
           My Wishlist
-          <Text type="secondary" className="ms-2 fs-6 fw-normal">({total} item{total !== 1 ? "s" : ""})</Text>
+          <Text type="secondary" className="ms-2 fs-6 fw-normal">
+            ({total} item{total !== 1 ? "s" : ""})
+          </Text>
         </Title>
       </div>
 
@@ -52,9 +59,12 @@ const Wishlist: React.FC = () => {
       ) : (
         <div className="row g-3">
           {items.map((item) => {
-            const v          = item.variant;
-            const hasOffer   = v.offerSaving > 0;
-            const isRemoving = toggling === v._id;
+            // Only render items with valid product + variant (orphaned ones filtered in slice)
+            const v = item.variant!;
+            const p = item.product!;
+            const displayPrice = v.effectivePrice ?? v.sellingPrice;
+            const hasDiscount  = (v.mrp ?? 0) > displayPrice;
+            const isRemoving   = toggling === v._id;
 
             return (
               <div className="col-12 col-sm-6 col-lg-4 col-xl-3" key={item._id}>
@@ -65,16 +75,16 @@ const Wishlist: React.FC = () => {
                     <div style={{ position: "relative" }}>
                       <img
                         src={v.media[0]?.url}
-                        alt={item.product.name}
+                        alt={p.name}
                         style={{ width: "100%", height: 240, objectFit: "cover", cursor: "pointer" }}
-                        onClick={() => navigate(`/products/${item.product.slug}`)}
+                        onClick={() => navigate(`/products/${p.slug}`)}
                       />
-                      {hasOffer && (
+                      {hasDiscount && (
                         <div
                           className="discount-badge"
                           style={{ position: "absolute", top: 8, left: 8 }}
                         >
-                          {v.offerSaving > 0 ? `Save ₹${v.offerSaving}` : `${v.totalDiscount ?? v.discount}% OFF`}
+                          {v.discount}% OFF
                         </div>
                       )}
                       <Button
@@ -101,24 +111,25 @@ const Wishlist: React.FC = () => {
                 >
                   <div
                     className="cursor-pointer"
-                    onClick={() => navigate(`/products/${item.product.slug}`)}
+                    onClick={() => navigate(`/products/${p.slug}`)}
                   >
                     <Text strong className="d-block" style={{ fontSize: 14 }}>
-                      {item.product.name}
+                      {p.name}
                     </Text>
                     <Text type="secondary" className="small d-block mb-1">
                       {v.size ? `${v.size} | ` : ""}{v.color}
                     </Text>
-                    {item.product.brand && (
-                      <Tag className="mb-2">{item.product.brand}</Tag>
-                    )}
+                    {p.brand && <Tag className="mb-2">{p.brand}</Tag>}
 
                     <div className="d-flex align-items-center gap-2 flex-wrap mt-1">
-                      <Text strong>₹{v.effectivePrice?.toLocaleString() ?? v.sellingPrice.toLocaleString()}</Text>
-                      {v.mrp > (v.effectivePrice ?? v.sellingPrice) && (
+                      <Text strong>₹{displayPrice.toLocaleString()}</Text>
+                      {hasDiscount && (
                         <Text delete type="secondary" className="small">
                           ₹{v.mrp.toLocaleString()}
                         </Text>
+                      )}
+                      {v.discount > 0 && (
+                        <Tag color="volcano" style={{ fontSize: 11 }}>{v.discount}% OFF</Tag>
                       )}
                     </div>
                   </div>

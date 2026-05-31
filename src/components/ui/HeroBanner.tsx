@@ -55,7 +55,7 @@ const HeroSlide = ({ banner }: { banner: Banner }) => {
       className="heroBannerSlide"
       style={{
         position:           "relative",
-        height:             "calc(100vh - 140px)",
+        height:             "calc(100vh - var(--header-h, 170px))",
         minHeight:          400,
         backgroundImage:    !isVideo && imgUrl ? `url(${imgUrl})` : undefined,
         backgroundSize:     "cover",
@@ -183,7 +183,7 @@ const HeroBanner = () => {
   return (
     <Carousel
       autoplay
-      autoplaySpeed={4000}
+      autoplaySpeed={6000}
       infinite
       speed={700}
       pauseOnHover={false}

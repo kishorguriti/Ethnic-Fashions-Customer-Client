@@ -5,7 +5,9 @@ export const getProducts = async (filters: ProductFilters = {}): Promise<Product
   const params = Object.fromEntries(
     Object.entries(filters).filter(([, v]) => v !== undefined && v !== "")
   );
+  console.log("[Products] API params →", params);
   const res = await axiosInstance.get("/products", { params });
+  console.log("[Products] API response →", res.data);
   return res.data.data;
 };
 

@@ -1,13 +1,11 @@
 @import url('./_customer-header.scss');
 @import url('./_customer-footer.scss');
 
-// Approximate height of the fixed header (topBanner + mainHeader + navLinks)
-// Adjust this value if the header height changes.
-$header-height: 140px;
-
 .customer-layout-container {
     min-height: 100vh;
     position: relative;
-    // Push content down so nothing hides under the fixed header
-    padding-top: $header-height;
+    // Use the measured header height (set by Header.tsx via JS).
+    // Fallback of 170px covers the largest possible header size
+    // before JS runs.
+    padding-top: var(--header-h, 170px);
 }

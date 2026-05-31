@@ -1,7 +1,7 @@
 @use '../core/variables/variables' as *;
 
 .heroContainer {
-  height: calc(100vh - 140px);
+  height: calc(100vh - var(--header-h, 170px));
   min-height: 400px;
   background: linear-gradient(115deg, $primary-purple 10%, #a236f0 50%, $accent-pink 90%);
   color: white;

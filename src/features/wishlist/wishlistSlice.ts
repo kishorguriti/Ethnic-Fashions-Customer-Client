@@ -50,9 +50,12 @@ const wishlistSlice = createSlice({
       .addCase(fetchWishlist.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(fetchWishlist.fulfilled, (state, action) => {
         state.loading = false;
-        state.items   = action.payload.items;
-        state.total   = action.payload.total;
-        state.wishlistedIds = action.payload.items.map((i) => i.variant._id);
+        const allItems = action.payload?.items ?? [];
+        // Filter out orphaned entries where product or variant was deleted
+        const validItems = allItems.filter((i) => i.product !== null && i.variant !== null);
+        state.items         = validItems;
+        state.total         = validItems.length;          // show real count, not API total
+        state.wishlistedIds = validItems.map((i) => i.variant!._id);
       })
       .addCase(fetchWishlist.rejected, (state, action) => {
         state.loading = false;

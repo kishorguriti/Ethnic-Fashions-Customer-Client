@@ -191,7 +191,8 @@ const AvailableCoupons = ({ open, onClose, cartSubtotal, appliedCoupon, onApply 
                       type="text"
                       size="small"
                       icon={copiedCode === coupon.code ? <CheckOutlined /> : <CopyOutlined />}
-                      style={{ color: "#fff" }}
+                      style={{ color: eligible ? "#fff" : "rgba(255,255,255,0.35)" }}
+                      disabled={!eligible}
                       onClick={() => handleCopy(coupon.code)}
                     />
                   </Tooltip>
