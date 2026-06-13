@@ -13,6 +13,20 @@ export const updateProfileApi = async (data: { name?: string; email?: string }) 
   return res.data.data.user;
 };
 
+export const uploadAvatarApi = async (file: File) => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  const res = await axiosInstance.post("/customer/profile/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.data.user;
+};
+
+export const removeAvatarApi = async () => {
+  const res = await axiosInstance.delete("/customer/profile/avatar");
+  return res.data.data.user;
+};
+
 export const changePasswordApi = async (data: {
   currentPassword: string;
   newPassword: string;
