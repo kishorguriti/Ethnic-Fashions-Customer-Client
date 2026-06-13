@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Input, Button, Space } from "antd";
 import {
   FacebookFilled,
@@ -38,7 +39,7 @@ const Footer: React.FC = () => {
             <h5>Customer Service</h5>
             <ul>
               <li>
-                <a href="#contact">Contact Us</a>
+                <Link to="/customer-support">Contact Us</Link>
               </li>
               <li>
                 <a href="#shipping">Shipping Info</a>
@@ -47,7 +48,7 @@ const Footer: React.FC = () => {
                 <a href="#returns">Returns & Exchanges</a>
               </li>
               <li>
-                <a href="#faq">FAQ</a>
+                <Link to="/customer-support#faq">FAQ</Link>
               </li>
             </ul>
           </div>
@@ -57,16 +58,16 @@ const Footer: React.FC = () => {
             <h5>Legal</h5>
             <ul>
               <li>
-                <a href="#privacy">Privacy Policy</a>
+                <Link to="/privacy-policy">Privacy Policy</Link>
               </li>
               <li>
-                <a href="#terms">Terms of Service</a>
+                <Link to="/terms">Terms & Conditions</Link>
               </li>
               <li>
-                <a href="#cookie">Cookie Policy</a>
+                <Link to="/shipping">Shipping Policy</Link>
               </li>
               <li>
-                <a href="#accessibility">Accessibility</a>
+                <Link to="/returns">Return & Refund Policy</Link>
               </li>
             </ul>
           </div>
