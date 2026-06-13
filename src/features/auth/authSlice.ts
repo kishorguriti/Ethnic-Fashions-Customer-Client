@@ -8,6 +8,8 @@ import {
 import {
   getProfile,
   updateProfileApi,
+  uploadAvatarApi,
+  removeAvatarApi,
 } from "../../services/customerApi";
 import type { AuthState, CustomerUser } from "../../types/auth";
 
@@ -48,6 +50,7 @@ const normaliseUser = (raw: any, fallback: Partial<CustomerUser> = {}): Customer
   phone:           raw?.phone || fallback.phone || "",
   email:           raw?.email || fallback.email,
   name:            raw?.name || raw?.fullName || fallback.name,
+  avatarUrl:       raw?.avatarUrl ?? fallback.avatarUrl,
   isPhoneVerified: raw?.isPhoneVerified ?? fallback.isPhoneVerified ?? false,
 });
 
@@ -194,6 +197,40 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+export const uploadAvatar = createAsyncThunk(
+  "auth/uploadAvatar",
+  async (file: File, { getState, rejectWithValue }) => {
+    try {
+      const current = (getState() as any).auth.user as CustomerUser;
+      const raw = await uploadAvatarApi(file);
+      const user = normaliseUser({ ...current, ...(raw || {}) });
+      saveUser(user);
+      return user;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || err.message || "Failed to upload profile picture"
+      );
+    }
+  }
+);
+
+export const removeAvatar = createAsyncThunk(
+  "auth/removeAvatar",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const current = (getState() as any).auth.user as CustomerUser;
+      const raw = await removeAvatarApi();
+      const user = normaliseUser({ ...current, ...(raw || {}), avatarUrl: "" });
+      saveUser(user);
+      return user;
+    } catch (err: any) {
+      return rejectWithValue(
+        err.response?.data?.message || err.message || "Failed to remove profile picture"
+      );
+    }
+  }
+);
+
 export const logoutUser = createAsyncThunk(
   "auth/logout",
   async () => {
@@ -248,6 +285,20 @@ const authSlice = createSlice({
         state.user    = action.payload;
       })
       .addCase(updateProfile.rejected,  rejected)
+
+      .addCase(uploadAvatar.pending,   pending)
+      .addCase(uploadAvatar.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user    = action.payload;
+      })
+      .addCase(uploadAvatar.rejected,  rejected)
+
+      .addCase(removeAvatar.pending,   pending)
+      .addCase(removeAvatar.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user    = action.payload;
+      })
+      .addCase(removeAvatar.rejected,  rejected)
 
       .addCase(logoutUser.fulfilled, (state) => {
         state.user  = null;

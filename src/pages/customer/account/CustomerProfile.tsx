@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Form, Input, Button, Card, Row, Col, Typography, Alert, Divider, Avatar, Tag } from "antd";
-import { UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Card, Row, Col, Typography, Alert, Divider, Avatar, Tag, Upload, message } from "antd";
+import { UserOutlined, PhoneOutlined, MailOutlined, EditOutlined, SaveOutlined, CameraOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons";
+import type { UploadProps } from "antd";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../../../hooks";
-import { updateProfile, clearAuthError } from "../../../features/auth/authSlice";
+import { updateProfile, uploadAvatar, removeAvatar, clearAuthError } from "../../../features/auth/authSlice";
 import { changePasswordApi } from "../../../services/customerApi";
 import type { RootState } from "../../../store";
 
@@ -15,6 +16,7 @@ const CustomerProfile = () => {
   const [profileForm] = Form.useForm();
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   // Populate form when user data is available
   useEffect(() => {
@@ -44,17 +46,77 @@ const CustomerProfile = () => {
   const displayName = user?.name || user?.phone || "Customer";
   const initials = displayName.charAt(0).toUpperCase();
 
+  const handleAvatarUpload: UploadProps["beforeUpload"] = async (file) => {
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      message.error("Only JPEG, PNG, and WebP images are allowed");
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      message.error("Image must be smaller than 5MB");
+      return false;
+    }
+
+    setAvatarUploading(true);
+    const result = await dispatch(uploadAvatar(file as File));
+    setAvatarUploading(false);
+
+    if (uploadAvatar.fulfilled.match(result)) {
+      message.success("Profile picture updated");
+    } else {
+      message.error((result.payload as string) || "Failed to upload profile picture");
+    }
+    return false;
+  };
+
+  const handleAvatarRemove = async () => {
+    setAvatarUploading(true);
+    const result = await dispatch(removeAvatar());
+    setAvatarUploading(false);
+
+    if (removeAvatar.fulfilled.match(result)) {
+      message.success("Profile picture removed");
+    } else {
+      message.error((result.payload as string) || "Failed to remove profile picture");
+    }
+  };
+
   return (
     <div className="customer-profile-page">
       {/* ── Profile Header Card ── */}
       <Card className="mb-4" bordered={false} style={{ borderRadius: 12 }}>
         <div className="d-flex align-items-center gap-4 flex-wrap">
-          <Avatar
-            size={80}
-            style={{ background: "linear-gradient(135deg, #8e2de2, #f209a2)", fontSize: 32, flexShrink: 0 }}
-          >
-            {initials}
-          </Avatar>
+          <div className="position-relative" style={{ flexShrink: 0 }}>
+            <Avatar
+              size={80}
+              src={user?.avatarUrl || undefined}
+              style={{ background: "linear-gradient(135deg, #8e2de2, #f209a2)", fontSize: 32 }}
+            >
+              {!user?.avatarUrl && initials}
+            </Avatar>
+            <Upload accept="image/jpeg,image/png,image/webp" showUploadList={false} beforeUpload={handleAvatarUpload}>
+              <Button
+                shape="circle"
+                size="small"
+                icon={avatarUploading ? <LoadingOutlined /> : <CameraOutlined />}
+                disabled={avatarUploading}
+                className="position-absolute"
+                style={{ bottom: -2, right: -2 }}
+              />
+            </Upload>
+            {user?.avatarUrl && (
+              <Button
+                shape="circle"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                disabled={avatarUploading}
+                onClick={handleAvatarRemove}
+                className="position-absolute"
+                style={{ bottom: -2, left: -2 }}
+              />
+            )}
+          </div>
           <div>
             <Title level={4} className="m-0">{displayName}</Title>
             <div className="d-flex gap-2 flex-wrap mt-1">

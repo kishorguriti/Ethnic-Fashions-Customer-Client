@@ -4,6 +4,7 @@ export interface CustomerUser {
   phone: string;
   email?: string;
   name?: string;
+  avatarUrl?: string;
   isPhoneVerified: boolean;
 }
 
