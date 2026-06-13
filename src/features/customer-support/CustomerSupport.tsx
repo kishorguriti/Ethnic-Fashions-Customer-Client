@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Collapse } from "antd";
 import {
   PhoneOutlined,
@@ -6,34 +6,17 @@ import {
   EnvironmentOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
+import { getFaqs, type FaqData } from "../../services/faqApi";
 
 const { Panel } = Collapse;
 
 const CustomerSupport: React.FC = () => {
   const [form] = Form.useForm();
+  const [faqData, setFaqData] = useState<FaqData[]>([]);
 
-  const faqData = [
-    {
-      header: "What is your shipping policy?",
-      content: "Details about shipping...",
-    },
-    {
-      header: "How can I track my order?",
-      content: "Details about tracking...",
-    },
-    {
-      header: "What is your return policy?",
-      content: "Details about returns...",
-    },
-    {
-      header: "Do you ship internationally?",
-      content: "Details about international shipping...",
-    },
-    {
-      header: "How do I change or cancel my order?",
-      content: "Details about cancellations...",
-    },
-  ];
+  useEffect(() => {
+    getFaqs().then(setFaqData);
+  }, []);
 
   return (
     <div className="support-container container py-5">
@@ -121,17 +104,21 @@ const CustomerSupport: React.FC = () => {
             </Form>
           </div>
 
-          <div className="faq-card p-4">
+          <div className="faq-card p-4" id="faq">
             <h3 className="section-subtitle mb-4">
               Frequently Asked Questions
             </h3>
-            <Collapse ghost expandIconPosition="end" className="support-faq">
-              {faqData.map((faq, index) => (
-                <Panel header={faq.header} key={index}>
-                  <p>{faq.content}</p>
-                </Panel>
-              ))}
-            </Collapse>
+            {faqData.length > 0 ? (
+              <Collapse ghost expandIconPosition="end" className="support-faq">
+                {faqData.map((faq) => (
+                  <Panel header={faq.question} key={faq._id}>
+                    <p>{faq.answer}</p>
+                  </Panel>
+                ))}
+              </Collapse>
+            ) : (
+              <p>No FAQs available at the moment.</p>
+            )}
           </div>
         </div>
       </div>

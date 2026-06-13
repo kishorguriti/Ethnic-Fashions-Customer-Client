@@ -20,6 +20,7 @@ import Notifications from "../pages/customer/account/Notifications";
 import PaymentMethods from "../pages/customer/account/PaymentMethods";
 import Checkout from "../features/checkout/Checkout";
 import OrderConfirmation from "../features/checkout/OrderConfirmation";
+import StaticPage from "../pages/customer/StaticPage";
 // import ShoppingCart from "../features/cart/ShoppingCart";
 
 export default function AppRoutes() {
@@ -53,6 +54,10 @@ export default function AppRoutes() {
         <Route path="order-placed" element={<OrderConfirmation />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="privacy-policy" element={<StaticPage slug="privacy-policy" />} />
+        <Route path="terms" element={<StaticPage slug="terms" />} />
+        <Route path="shipping" element={<StaticPage slug="shipping" />} />
+        <Route path="returns" element={<StaticPage slug="returns" />} />
       </Route>
       {/* Admin Routes */}
       <Route
