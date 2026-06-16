@@ -340,7 +340,9 @@ const ProductDetail = () => {
                         <td className="attr-key">
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                         </td>
-                        <td className="attr-value">{value}</td>
+                        <td className="attr-value">
+                          {Array.isArray(value) ? value.join(", ") : value}
+                        </td>
                       </tr>
                     ))}
                     {product.brand && (

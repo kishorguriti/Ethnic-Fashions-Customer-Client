@@ -17,7 +17,9 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
 
   const displayVariant = product.variants?.[0];
   const displayImage   = displayVariant?.media?.[0]?.url;
-  const tags           = Object.values(product.attributes || {}).slice(0, 2);
+  const tags           = Object.values(product.attributes || {})
+    .flatMap((v) => (Array.isArray(v) ? v : [v]))
+    .slice(0, 2);
 
   const isWishlisted  = displayVariant ? wishlistedIds.includes(displayVariant._id) : false;
   const isToggling    = displayVariant ? toggling === displayVariant._id : false;

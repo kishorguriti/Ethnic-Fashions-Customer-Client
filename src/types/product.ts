@@ -47,7 +47,7 @@ export interface Product {
   };
   brand?: string;
   tags: string[];
-  attributes: Record<string, string>;
+  attributes: Record<string, string | string[]>;
   approvalStatus: "pending" | "approved" | "rejected";
   isActive: boolean;
   variants: ProductVariant[];
