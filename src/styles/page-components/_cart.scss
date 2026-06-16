@@ -17,22 +17,67 @@ $text-muted: #666666;
         border: 0.8px solid #E2E8F0 !important;
         box-shadow: 0px 1px 3px 0px #0000001A !important;
 
-
         .item-thumb {
             width: 110px;
             height: 130px;
             object-fit: cover;
             border-radius: 12px;
         }
+    }
 
-        .qty-selector {
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
+    // ── Quantity +/- control ──────────────────────────────────────────────────
+    .qty-control {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #fff;
+        height: 40px;
+        user-select: none;
+    }
 
-            .ant-input-number-input {
-                height: 38px;
-            }
+    .qty-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: #f8f9fa;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1;
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s, transform 0.1s;
+        -webkit-tap-highlight-color: transparent;
+        flex-shrink: 0;
+        font-family: inherit;
+        padding: 0;
+
+        &:not(:disabled):hover {
+            background: #e9ecef;
         }
+
+        &:not(:disabled):active {
+            background: #dee2e6;
+            transform: scale(0.9);
+        }
+
+        &:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+    }
+
+    .qty-display {
+        min-width: 40px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        color: #1a1a2e;
+        padding: 0 4px;
     }
 
     .summary-card {
@@ -64,7 +109,6 @@ $text-muted: #666666;
     }
 
     .empty-state-content {
-        // margin-top: 100px;
         min-height: 300px;
 
         .empty-message {
@@ -78,7 +122,7 @@ $text-muted: #666666;
             border-color: $primary-blue;
             height: 48px;
             padding: 0 40px;
-            border-radius: 24px; // Matches the rounded pill shape
+            border-radius: 24px;
             font-weight: 500;
             transition: all 0.3s ease;
 
@@ -88,5 +132,60 @@ $text-muted: #666666;
                 transform: translateY(-1px);
             }
         }
+    }
+}
+
+// ── Mobile cart adjustments ───────────────────────────────────────────────────
+@media (max-width: 767px) {
+    .cart-page-wrapper {
+        padding: 16px 0 24px;
+
+        .page-header {
+            font-size: 1.5rem !important;
+        }
+
+        .cart-item-card {
+            border-radius: 14px;
+
+            .ant-card-body {
+                padding: 14px !important;
+            }
+
+            // Tighter image on mobile
+            img[style*="width: 100"] {
+                width: 80px !important;
+                height: 96px !important;
+            }
+
+            .item-details {
+                margin-left: 12px !important;
+
+                .ant-typography.fs-5 {
+                    font-size: 14px !important;
+                }
+            }
+
+            // Remove absolute price on mobile — show inline
+            .d-flex.flex-column.align-items-end.ms-3 {
+                display: none !important;
+            }
+        }
+
+        .summary-card {
+            border-radius: 16px;
+            margin-top: 8px;
+
+            .checkout-btn {
+                height: 52px;
+                font-size: 15px;
+                border-radius: 14px;
+            }
+        }
+    }
+}
+
+@media (max-width: 479px) {
+    .cart-page-wrapper .cart-item-card .ant-card-body {
+        padding: 12px !important;
     }
 }

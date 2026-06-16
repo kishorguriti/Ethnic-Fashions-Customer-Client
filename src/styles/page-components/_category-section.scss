@@ -75,7 +75,36 @@
     font-weight: 600 !important;
     font-size: 12px !important;
     line-height: 16px !important;
+}
 
+// ── Mobile category cards ──────────────────────────────────────────────────────
+@media (max-width: 767px) {
+    .category-card {
+        border-radius: 14px;
 
+        .overlay {
+            border-radius: 14px;
+            aspect-ratio: 1 / 1.2;
+            padding: 20px 16px;
 
+            h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        &:hover {
+            transform: none; // disable hover scale on touch devices
+        }
+
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+}
+
+@media (max-width: 479px) {
+    .category-card .overlay {
+        aspect-ratio: 1 / 1;
+        padding: 16px;
+    }
 }

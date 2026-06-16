@@ -1,4 +1,5 @@
-import { Row, Col, Select, Switch, Checkbox, Collapse, Skeleton, Empty, Pagination, Card } from "antd";
+import { Row, Col, Select, Switch, Checkbox, Collapse, Skeleton, Empty, Pagination, Card, Drawer, Button } from "antd";
+import { FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -80,6 +81,7 @@ const ProductCollection = () => {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState<string>("newest");
   const [page, setPage] = useState(1);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   // Reset filters when category changes
   useEffect(() => {
@@ -130,6 +132,8 @@ const ProductCollection = () => {
     setInStockOnly(false);
     setPage(1);
   };
+
+  const activeFilterCount = Object.values(selectedFilters).flat().length + (inStockOnly ? 1 : 0);
 
   // ── Top-level category: show subcategory picker ───────────────────────────
   if (catLoading && categorySlug) {
@@ -231,11 +235,24 @@ const ProductCollection = () => {
         {/* Product Grid */}
         <Col lg={18} md={16} xs={24}>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <span className="text-muted small">
-              {productsLoading ? "Loading..." : `${total} item${total !== 1 ? "s" : ""}`}
-            </span>
             <div className="d-flex align-items-center gap-2">
-              <span className="small">Sort by:</span>
+              {/* Mobile filter button — only visible on xs/sm */}
+              <button
+                className="mobile-filter-btn"
+                onClick={() => setMobileFilterOpen(true)}
+              >
+                <FilterOutlined />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="filter-badge">{activeFilterCount}</span>
+                )}
+              </button>
+              <span className="text-muted small">
+                {productsLoading ? "Loading..." : `${total} item${total !== 1 ? "s" : ""}`}
+              </span>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <span className="small d-none d-sm-inline">Sort by:</span>
               <Select
                 value={sortBy}
                 onChange={(v) => { setSortBy(v); setPage(1); }}
@@ -283,6 +300,78 @@ const ProductCollection = () => {
           )}
         </Col>
       </Row>
+
+      {/* ── Mobile Filter Drawer ─────────────────────────────────────────────── */}
+      <Drawer
+        title="Filters"
+        placement="bottom"
+        height="80vh"
+        open={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        className="mobile-filter-drawer"
+        styles={{ body: { padding: 0 } }}
+        extra={
+          <Button type="text" size="small" onClick={clearAll} style={{ color: "#888" }}>
+            Clear all
+          </Button>
+        }
+      >
+        <div className="mobile-filter-content" style={{ overflowY: "auto", height: "calc(80vh - 140px)" }}>
+          {filterableAttributes.length > 0 ? (
+            <Collapse
+              ghost
+              expandIconPosition="end"
+              defaultActiveKey={filterableAttributes.slice(0, 2).map((f) => f.key)}
+            >
+              {filterableAttributes.map((filter) => (
+                <Collapse.Panel header={filter.label} key={filter.key} className="filter-section">
+                  <Checkbox.Group
+                    className="filter-checkbox-group"
+                    value={selectedFilters[filter.key] || []}
+                    onChange={(vals) => handleFilterChange(filter.key, vals as string[])}
+                  >
+                    {filter.options.map((option) => (
+                      <Checkbox key={option} value={option}>
+                        {filter.type === "color" ? (
+                          <span className="d-flex align-items-center gap-2">
+                            <span style={{
+                              display: "inline-block", width: 14, height: 14,
+                              borderRadius: "50%", background: option.toLowerCase(), border: "1px solid #ddd",
+                            }} />
+                            {option}
+                          </span>
+                        ) : option}
+                      </Checkbox>
+                    ))}
+                  </Checkbox.Group>
+                </Collapse.Panel>
+              ))}
+            </Collapse>
+          ) : (
+            <p className="text-muted small mt-3 px-4">Select a category to see filters</p>
+          )}
+
+          <div className="filter-in-stock-row">
+            <span className="small fw-bold">In Stock Only</span>
+            <Switch
+              size="small"
+              checked={inStockOnly}
+              onChange={(v) => { setInStockOnly(v); setPage(1); }}
+            />
+          </div>
+        </div>
+
+        <div className="mobile-filter-footer">
+          <Button className="btn-clear" onClick={clearAll}>Clear All</Button>
+          <Button
+            type="primary"
+            className="btn-apply"
+            onClick={() => setMobileFilterOpen(false)}
+          >
+            Show {total} Results
+          </Button>
+        </div>
+      </Drawer>
     </div>
   );
 };
