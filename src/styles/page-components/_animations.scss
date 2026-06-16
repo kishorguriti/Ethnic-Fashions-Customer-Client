@@ -1,0 +1,392 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  AARNA — Premium Micro-Interaction & Animation System
+//  Rules:
+//   • Use transform / opacity only (GPU composited, no layout reflow)
+//   • Durations: instant feedback 100ms, micro 150ms, standard 250ms, elaborate 400ms
+//   • Easing: cubic-bezier(0.22, 1, 0.36, 1) for snap-out feel (iOS spring)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Keyframe library ──────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.9, 0.9, 1);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position:  800px 0; }
+}
+
+@keyframes heartBeat {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(1.3); }
+  50%  { transform: scale(1.1); }
+  75%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+@keyframes rippleExpand {
+  to {
+    transform: translate3d(-50%, -50%, 0) scale(20);
+    opacity: 0;
+  }
+}
+
+@keyframes badgePop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-24px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+// ── Page entry transition ─────────────────────────────────────────────────────
+// Applied via React key on route wrapper — triggers on every navigation
+
+.page-content {
+  animation: fadeSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+  transform: translateZ(0); // promote to GPU layer
+}
+
+// ── Ant Design message (toast) animations ─────────────────────────────────────
+.ant-message-notice-content {
+  animation: toastSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+// ── Badge pop animation ───────────────────────────────────────────────────────
+.ant-badge-count {
+  animation: badgePop 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+// ── Button micro-interactions ─────────────────────────────────────────────────
+
+// All Ant Design buttons — scale press on click
+.ant-btn {
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+  transform: translateZ(0);
+  will-change: transform;
+
+  &:active:not(:disabled) {
+    transform: scale3d(0.95, 0.95, 1) !important;
+  }
+}
+
+// Primary buttons — subtle glow on hover (desktop)
+@media (hover: hover) {
+  .ant-btn-primary:not(:disabled):hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3) !important;
+    transform: translateY(-1px) !important;
+  }
+}
+
+// ── Custom buttons (qty, mobile-menu, drawer-close) ───────────────────────────
+.mobile-menu-btn,
+.mobile-drawer-close,
+.qty-btn {
+  transition: transform 0.1s ease, background 0.15s ease !important;
+  will-change: transform;
+}
+
+// ── Ripple effect on primary action buttons ───────────────────────────────────
+// CSS-only approximation: radial expand from centre on active
+
+.checkout-btn,
+.hero-explore-collection-btn,
+.mobile-auth-btn,
+.btn-apply {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    opacity: 1;
+    pointer-events: none;
+    transition: none;
+  }
+
+  &:active::after {
+    animation: rippleExpand 0.5s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+  }
+}
+
+// ── Product card animations ───────────────────────────────────────────────────
+
+.product-card {
+  will-change: transform;
+  transform: translateZ(0);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease !important;
+
+  // Desktop — lift on hover
+  @media (hover: hover) {
+    &:hover {
+      transform: translate3d(0, -6px, 0) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12) !important;
+    }
+  }
+
+  // Mobile — press scale on tap
+  @media (hover: none) {
+    &:active {
+      transform: scale3d(0.97, 0.97, 1) !important;
+    }
+  }
+
+  // Image zoom on hover (desktop) — enhance existing
+  .image-container img {
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+
+  @media (hover: hover) {
+    &:hover .image-container img {
+      transform: scale3d(1.08, 1.08, 1) !important;
+    }
+  }
+
+  // Quick-add container — smoother reveal
+  .image-container .quick-add-container {
+    transition: opacity 0.25s ease, visibility 0.25s ease !important;
+  }
+}
+
+// ── Category card animations ──────────────────────────────────────────────────
+.category-card {
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease !important;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translate3d(0, -4px, 0) scale(1.01) !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+
+  @media (hover: none) {
+    &:active {
+      transform: scale3d(0.98, 0.98, 1) !important;
+    }
+  }
+}
+
+// ── Feature cards ─────────────────────────────────────────────────────────────
+.feature-card {
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease,
+              background 0.3s ease !important;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translate3d(0, -6px, 0) !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+}
+
+// ── Cart item card entrance ───────────────────────────────────────────────────
+.cart-item-card {
+  animation: fadeSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  &:nth-child(2) { animation-delay: 60ms; }
+  &:nth-child(3) { animation-delay: 120ms; }
+  &:nth-child(4) { animation-delay: 180ms; }
+}
+
+// ── Wishlist heart pop ────────────────────────────────────────────────────────
+.wishlist-btn {
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1) !important;
+
+  &:active:not(:disabled) {
+    transform: scale(0.85) !important;
+  }
+}
+
+// Heart fill — beat when wishlisted
+.anticon-heart-filled {
+  animation: heartBeat 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// ── Shimmer loading skeleton ──────────────────────────────────────────────────
+.shimmer-line {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e8e8e8 37%,
+    #f0f0f0 63%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 4px;
+}
+
+// Enhance Ant Design Skeleton shimmer
+.ant-skeleton-content .ant-skeleton-paragraph > li,
+.ant-skeleton-content .ant-skeleton-title {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e8e8e8 37%,
+    #f0f0f0 63%
+  ) !important;
+  background-size: 800px 100% !important;
+  animation: shimmer 1.4s ease infinite !important;
+}
+
+// ── Drawer entrance ───────────────────────────────────────────────────────────
+// Ant Design drawer already uses CSS transitions — enhance timing
+.ant-drawer-content-wrapper {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.ant-drawer-mask {
+  transition: opacity 0.28s ease !important;
+}
+
+// ── Mobile nav item tap feedback ──────────────────────────────────────────────
+.mobile-nav-item,
+.mobile-nav-subitem {
+  transition: background 0.1s ease !important;
+}
+
+// ── Filter drawer bottom-sheet entrance ──────────────────────────────────────
+.mobile-filter-drawer .ant-drawer-content-wrapper {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+// ── Form validation fields ────────────────────────────────────────────────────
+.ant-form-item-explain-error {
+  animation: fadeSlideDown 0.2s ease both !important;
+}
+
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-affix-wrapper {
+  animation: scaleIn 0.15s ease both !important;
+}
+
+// ── Order summary card entrance ───────────────────────────────────────────────
+.order-summary-card,
+.summary-card {
+  animation: slideInLeft 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 100ms;
+}
+
+// ── Discount/Offer badge pop ──────────────────────────────────────────────────
+.discount-badge,
+.collection-badge {
+  animation: badgePop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+// ── Address entry card ────────────────────────────────────────────────────────
+.address-entry-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+    }
+  }
+}
+
+// ── Checkout step transition ──────────────────────────────────────────────────
+.selection-main-card,
+.delivery-selection-card,
+.payment-selection-card,
+.review-step-container {
+  animation: fadeSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+// ── Fabric circle hover ───────────────────────────────────────────────────────
+.fabric-circle {
+  will-change: transform;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s ease,
+              border-color 0.2s ease,
+              color 0.2s ease !important;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translate3d(0, -6px, 0) !important;
+    }
+  }
+
+  @media (hover: none) {
+    &:active {
+      transform: scale3d(0.95, 0.95, 1) !important;
+    }
+  }
+}
+
+// ── Reduce motion accessibility ───────────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

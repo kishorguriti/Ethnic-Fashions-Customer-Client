@@ -235,13 +235,94 @@
   }
 }
 
-// Responsive adjustments
+// ── Responsive adjustments ────────────────────────────────────────────────────
 @media (max-width: 767px) {
   .product-gallery {
     position: static;
+
+    .gallery-main {
+      aspect-ratio: 4 / 5;
+      margin-bottom: 10px;
+    }
+
+    .gallery-thumbs {
+      gap: 6px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+
+      .gallery-thumb {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+      }
+    }
   }
 
-  .product-info-panel .product-detail-name {
-    font-size: 1.4rem;
+  .product-info-panel {
+    .product-detail-name {
+      font-size: 1.35rem;
+    }
+
+    .product-detail-price {
+      .price-current {
+        font-size: 1.4rem;
+      }
+    }
+
+    // Sticky CTA row at bottom on mobile
+    .cta-row {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: #fff;
+      padding: 12px 16px;
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+      border-top: 1px solid #f0f0f0;
+      gap: 10px;
+
+      .btn-add-cart {
+        height: 48px;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .btn-wishlist {
+        height: 48px;
+        min-width: 48px;
+        border-radius: 12px;
+      }
+    }
+
+    // Extra padding so content isn't hidden behind sticky CTA
+    .product-attributes {
+      padding-bottom: 80px;
+    }
+
+    .size-options .size-chip {
+      min-width: 48px;
+      height: 48px;
+    }
+  }
+
+  .product-detail-container {
+    padding-bottom: 100px;
+  }
+}
+
+@media (max-width: 479px) {
+  .product-info-panel {
+    .color-swatches .color-swatch {
+      width: 36px;
+      height: 36px;
+    }
+
+    .selector-label {
+      font-size: 13px;
+    }
   }
 }

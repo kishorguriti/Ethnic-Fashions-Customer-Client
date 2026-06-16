@@ -1,5 +1,6 @@
 // .trending-section {
     .product-card {
+        cursor: pointer;
         border: none;
         border-radius: 16px;
         overflow: hidden;
@@ -99,6 +100,50 @@
             }
         }
 
+        // ── Mobile: quick-add always visible, card press effect ─────────────
+        @media (max-width: 767px) {
+            border-radius: 12px;
+
+            &:active {
+                transform: scale(0.98);
+            }
+
+            .image-container {
+                border-radius: 12px;
+
+                .quick-add-container {
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    bottom: 8px;
+
+                    .add-to-cart-btn {
+                        height: 40px;
+                        font-size: 13px;
+                    }
+                }
+
+                .wishlist-btn {
+                    width: 36px;
+                    height: 36px;
+                    min-width: 36px;
+                }
+            }
+        }
+
+        @media (max-width: 479px) {
+            .image-container .badge-container {
+                top: 8px;
+                left: 8px;
+                gap: 4px;
+
+                .discount-badge,
+                .collection-badge {
+                    font-size: 10px;
+                    padding: 3px 8px;
+                }
+            }
+        }
+
         .product-info {
             padding: 12px 4px;
 
@@ -146,6 +191,60 @@
                     font-size: 14px;
                 }
             }
+
+            // Mobile product info tighter
+            @media (max-width: 479px) {
+                padding: 8px 2px;
+
+                .title {
+                    font-size: 13px;
+                }
+
+                .price-section .current-price {
+                    font-size: 15px;
+                }
+
+                .price-section .old-price {
+                    font-size: 12px;
+                }
+
+                .tags .product-tags-cls {
+                    font-size: 10px;
+                    padding: 2px 7px;
+                }
+            }
         }
     }
 // }
+
+// ── Mobile product card button (add-to-cart / select-size) ────────────────────
+.add-to-cart-btn {
+    width: 100%;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: transform 0.15s, background 0.15s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    -webkit-tap-highlight-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            background: #fff;
+            transform: scale(1.02);
+        }
+    }
+
+    &:active {
+        transform: scale(0.97);
+        background: #f0f4ff;
+    }
+}

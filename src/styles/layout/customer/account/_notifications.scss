@@ -56,3 +56,16 @@
     }
   }
 }
+
+@media (max-width: 767px) {
+  .notifications-card {
+    border-radius: 14px;
+
+    .ant-card-body { padding: 16px !important; }
+
+    .notification-item {
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+  }
+}

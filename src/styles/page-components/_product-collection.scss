@@ -1,5 +1,125 @@
 @use '../core/variables/variables' as *;
 
+// ── Mobile filter button (shown only on xs/sm) ─────────────────────────────────
+.mobile-filter-btn {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+
+    &:active {
+        background: #f5f5f5;
+    }
+
+    .filter-badge {
+        background: $primary-purple;
+        color: #fff;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .mobile-filter-btn {
+        display: flex;
+    }
+}
+
+// ── Mobile filter drawer ───────────────────────────────────────────────────────
+.mobile-filter-drawer {
+    .ant-drawer-body {
+        padding: 0 !important;
+    }
+
+    .ant-drawer-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .mobile-filter-content {
+        padding: 8px 0;
+
+        .filter-section {
+            .ant-collapse-header {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+                font-weight: 500;
+            }
+
+            .ant-collapse-content-box {
+                padding-left: 20px !important;
+                padding-right: 20px !important;
+                max-height: 280px;
+                overflow-y: auto;
+            }
+
+            .filter-checkbox-group {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+
+                .ant-checkbox-wrapper {
+                    margin-left: 0 !important;
+                    font-size: 14px;
+                    min-height: 36px;
+                    display: flex;
+                    align-items: center;
+                }
+            }
+        }
+
+        .filter-in-stock-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #f5f5f5;
+        }
+    }
+
+    .mobile-filter-footer {
+        padding: 16px 20px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 12px;
+
+        .btn-clear {
+            flex: 1;
+            height: 46px;
+            border-radius: 12px;
+            font-weight: 500;
+            border-color: #e2e8f0;
+            color: #666;
+        }
+
+        .btn-apply {
+            flex: 2;
+            height: 46px;
+            border-radius: 12px;
+            font-weight: 600;
+            background: $Primary-gradient;
+            border: none;
+        }
+    }
+}
+
 .collection-container {
     padding: 40px 0;
 
@@ -55,9 +175,8 @@
             }
 
             .ant-collapse-content-box {
-                // padding: 8px 0 !important;
                 max-height: 250px;
-                overflow-y: auto; // Handle long lists
+                overflow-y: auto;
             }
 
             .filter-checkbox-group {
@@ -81,7 +200,6 @@
                     }
 
                     span.ant-checkbox-label {
-
                         color: #0F172A !important;
                     }
                 }
@@ -89,6 +207,21 @@
                 span:last-child {
                     padding-inline-start: 12px;
                 }
+            }
+        }
+    }
+}
+
+// ── Mobile collection header adjustments ──────────────────────────────────────
+@media (max-width: 767px) {
+    .collection-container {
+        padding: 24px 0;
+
+        .collection-header {
+            margin-bottom: 24px;
+
+            h1 {
+                font-size: clamp(1.5rem, 6vw, 2rem);
             }
         }
     }

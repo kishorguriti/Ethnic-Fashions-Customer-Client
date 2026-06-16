@@ -1,3 +1,41 @@
+/* ── Mobile-first global base ─────────────────────────────────────────────── */
+
+/* Prevent horizontal overflow on every element */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling + overflow lock */
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* Prevent text size inflation on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Lock body horizontally; allow momentum scroll on iOS */
+body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove tap highlight on interactive elements */
+a, button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Minimum touch target size */
+button, [role="button"], a {
+  min-height: 44px;
+}
+
+/* Images never overflow their container */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -28,6 +66,10 @@
   @media (max-width: 1024px) {
     font-size: 16px;
   }
+
+  @media (max-width: 767px) {
+    font-size: 15px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -51,19 +93,20 @@
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  text-align: left;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 
 h1,
@@ -108,4 +151,90 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ── Responsive typography ────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  h1 {
+    font-size: clamp(1.5rem, 6vw, 2.25rem);
+    letter-spacing: -0.5px;
+    margin: 16px 0;
+  }
+
+  h2 {
+    font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+    letter-spacing: 0;
+    margin: 0 0 6px;
+  }
+}
+
+/* ── Container fluid on mobile ────────────────────────────────────────────── */
+@media (max-width: 575px) {
+  .container,
+  .container-fluid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ── Ant Design modal responsive ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .ant-modal {
+    margin: 0 !important;
+    max-width: 100vw !important;
+    top: auto !important;
+    bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .ant-modal-content {
+    border-radius: 20px 20px 0 0 !important;
+    padding: 20px 16px !important;
+  }
+
+  /* Bottom-sheet style drawers */
+  .ant-drawer-bottom .ant-drawer-content {
+    border-radius: 20px 20px 0 0 !important;
+  }
+}
+
+/* ── Prevent table overflow ───────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Ant Design Steps mobile ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ant-steps-item-title {
+    font-size: 11px !important;
+  }
+
+  .ant-steps-item-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* ── Ant Design form inputs full-width on mobile ─────────────────────────── */
+@media (max-width: 767px) {
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-select,
+  .ant-picker {
+    width: 100% !important;
+  }
+
+  .ant-form-item {
+    margin-bottom: 16px !important;
+  }
+}
+
+/* ── GPU-accelerated animation utility ───────────────────────────────────── */
+.will-animate {
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }

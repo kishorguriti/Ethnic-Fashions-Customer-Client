@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import { useAppDispatch, useAuthSelector } from "../../../hooks";
@@ -10,6 +10,7 @@ import { fetchCurrentUser } from "../../../features/auth/authSlice";
 const CustomerLayout = () => {
   const dispatch = useAppDispatch();
   const { user } = useAuthSelector();
+  const { pathname } = useLocation();
 
   // On login: sync fresh profile + cart + wishlist from server
   useEffect(() => {
@@ -26,10 +27,12 @@ const CustomerLayout = () => {
   return (
     <div className="customer-layout-container">
       <Header />
-      <Outlet />
-      <div>
-        <Footer />
-      </div>
+      {/* key=pathname re-mounts the wrapper on every route change, re-triggering
+          the fadeSlideUp CSS animation defined in _animations.scss */}
+      <main key={pathname} className="page-content">
+        <Outlet />
+      </main>
+      <Footer />
     </div>
   );
 };

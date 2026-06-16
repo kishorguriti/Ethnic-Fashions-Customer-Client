@@ -57,6 +57,39 @@
 
     p {
         color: #6a11cb;
+    }
+}
 
+// ── Mobile fabric circles ──────────────────────────────────────────────────────
+@media (max-width: 767px) {
+    .fabric-circle {
+        width: 110px;
+        height: 110px;
+        border-radius: 12px;
+        font-size: 28px;
+
+        p {
+            font-size: 14px;
+            line-height: 1.2;
+        }
+    }
+
+    // tighter wrapping gap on mobile
+    .d-flex.justify-content-center.flex-wrap.gap-5.py-4 {
+        gap: 16px !important;
+        padding-top: 16px !important;
+        padding-bottom: 16px !important;
+    }
+}
+
+@media (max-width: 479px) {
+    .fabric-circle {
+        width: 88px;
+        height: 88px;
+        font-size: 22px;
+
+        p {
+            font-size: 12px;
+        }
     }
 }

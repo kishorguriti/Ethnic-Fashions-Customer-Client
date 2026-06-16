@@ -84,7 +84,7 @@ const CustomerProfile = () => {
   return (
     <div className="customer-profile-page">
       {/* ── Profile Header Card ── */}
-      <Card className="mb-4" bordered={false} style={{ borderRadius: 12 }}>
+      <Card className="profile-card mb-4" bordered={false} style={{ borderRadius: 12 }}>
         <div className="d-flex align-items-center gap-4 flex-wrap">
           <div className="position-relative" style={{ flexShrink: 0 }}>
             <Avatar
@@ -136,6 +136,7 @@ const CustomerProfile = () => {
 
       {/* ── Edit Profile Card ── */}
       <Card
+        className="profile-card"
         bordered={false}
         style={{ borderRadius: 12 }}
         title={
@@ -215,7 +216,7 @@ const CustomerProfile = () => {
       <Divider />
 
       {/* ── Change Password Card ── */}
-      <Card bordered={false} style={{ borderRadius: 12 }} title="Change Password">
+      <Card className="profile-card" bordered={false} style={{ borderRadius: 12 }} title="Change Password">
         <Text type="secondary" className="d-block mb-3 small">
           Use your current password to set a new one.
         </Text>

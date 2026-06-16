@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card, Typography, Button, Input, Row, Col,
-  InputNumber, Divider, message, Alert, Spin, Tag,
+  Divider, message, Alert, Spin, Tag,
 } from "antd";
 import { DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, GiftOutlined } from "@ant-design/icons";
 import { useAppDispatch, useCartSelector } from "../../hooks";
@@ -29,8 +29,8 @@ const CartPage: React.FC = () => {
   const couponSaving = appliedCoupon?.discountAmount ?? 0;
   const total        = subtotal - couponSaving + shipping + tax;
 
-  const handleUpdateQty = (variantId: string, val: number | null) => {
-    if (!val || val < 1) return;
+  const handleUpdateQty = (variantId: string, val: number) => {
+    if (val < 1) return;
     dispatch(updateQty({ variantId, quantity: val }));
   };
 
@@ -155,14 +155,25 @@ const CartPage: React.FC = () => {
                       {!v.inStock && <Tag color="warning" className="mt-1">Out of Stock</Tag>}
 
                       <div className="mt-3">
-                        <InputNumber
-                          min={1}
-                          max={v.available}
-                          value={item.quantity}
-                          disabled={mutating}
-                          onChange={(val) => handleUpdateQty(pid, val)}
-                          className="qty-selector"
-                        />
+                        <div className="qty-control">
+                          <button
+                            className="qty-btn"
+                            aria-label="Decrease quantity"
+                            disabled={mutating || item.quantity <= 1}
+                            onClick={() => handleUpdateQty(pid, item.quantity - 1)}
+                          >
+                            −
+                          </button>
+                          <span className="qty-display">{item.quantity}</span>
+                          <button
+                            className="qty-btn"
+                            aria-label="Increase quantity"
+                            disabled={mutating || item.quantity >= v.available}
+                            onClick={() => handleUpdateQty(pid, item.quantity + 1)}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
 

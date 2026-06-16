@@ -11,15 +11,15 @@ const FallbackSlide = () => {
   const navigate = useNavigate();
   return (
     <div className="heroContainer">
-      <div className="heroBody d-flex align-items-center">
-        <div className="col-lg-6">
+      <div className="heroBody hero-content-wrapper d-flex align-items-center">
+        <div className="col-12 col-md-8 col-lg-6">
           <div className="weddingBadge">✨ Wedding Collection 2026</div>
-          <h1 className="title">Your Style,<br />Redefined</h1>
-          <p className="description">
+          <h1 className="hero-title">Your Style,<br />Redefined</h1>
+          <p className="hero-description">
             Discover handcrafted ethnic fashion that blends tradition with
             contemporary elegance. From sarees to jewellery, find your perfect look.
           </p>
-          <div className="d-flex gap-3 mb-5">
+          <div className="hero-cta-row">
             <Button
               type="primary" size="large" shape="round"
               className="hero-explore-collection-btn"
@@ -56,12 +56,11 @@ const HeroSlide = ({ banner }: { banner: Banner }) => {
       style={{
         position:           "relative",
         height:             "calc(100vh - var(--header-h, 170px))",
-        minHeight:          400,
+        minHeight:          420,
         backgroundImage:    !isVideo && imgUrl ? `url(${imgUrl})` : undefined,
         backgroundSize:     "cover",
         backgroundPosition: objectPos,
         display:            "flex",
-        alignItems:         "center",
         overflow:           "hidden",
       }}
     >
@@ -85,7 +84,7 @@ const HeroSlide = ({ banner }: { banner: Banner }) => {
         />
       )}
 
-      {/* Dark overlay for text readability */}
+      {/* Admin-set flat overlay */}
       {banner.overlayOpacity > 0 && (
         <div
           style={{
@@ -98,12 +97,15 @@ const HeroSlide = ({ banner }: { banner: Banner }) => {
         />
       )}
 
+      {/* Mobile gradient — always renders; makes text readable over any image */}
+      <div className="hero-mobile-gradient" />
+
       <div
-        className="container"
-        style={{ position: "relative", zIndex: 2, color: banner.textColor || "#fff" }}
+        className="container hero-content-wrapper"
+        style={{ position: "relative", zIndex: 3, color: banner.textColor || "#fff" }}
       >
         <div className="row">
-          <div className="col-lg-7 col-md-9">
+          <div className="col-12 col-md-9 col-lg-7">
             {banner.badge && (
               <div
                 className="weddingBadge mb-3"
@@ -114,22 +116,22 @@ const HeroSlide = ({ banner }: { banner: Banner }) => {
             )}
 
             <h1
-              className="title mb-3"
-              style={{ color: banner.textColor, fontSize: "clamp(2rem, 5vw, 3.5rem)", lineHeight: 1.15 }}
+              className="hero-title mb-3"
+              style={{ color: banner.textColor, lineHeight: 1.15 }}
             >
               {banner.title}
             </h1>
 
             {banner.subtitle && (
               <p
-                className="description mb-4"
-                style={{ color: banner.textColor, opacity: 0.88, maxWidth: 520 }}
+                className="hero-description mb-4"
+                style={{ color: banner.textColor, opacity: 0.9, maxWidth: 520 }}
               >
                 {banner.subtitle}
               </p>
             )}
 
-            <div className="d-flex gap-3 flex-wrap">
+            <div className="hero-cta-row">
               {banner.ctaText && (
                 <Button
                   type="primary" size="large" shape="round"
