@@ -165,9 +165,11 @@ $text-muted: #666666;
                 }
             }
 
-            // Remove absolute price on mobile — show inline
+            // Hide only the line-total price on mobile; keep the delete button visible
             .d-flex.flex-column.align-items-end.ms-3 {
-                display: none !important;
+                > .ant-typography {
+                    display: none !important;
+                }
             }
         }
 

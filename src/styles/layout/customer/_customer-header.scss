@@ -96,7 +96,7 @@
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 4px !important;
+    gap: 16px !important;
 
     // Each icon link — touch target & centering
     a[href="/wishlist"],
@@ -150,6 +150,11 @@
     padding: 0 4px !important;
     border-radius: 8px !important;
     letter-spacing: 0 !important;
+}
+
+// ── Badge inside header actions — sit above the icon, not over it ─────────────
+.header-actions .ant-badge-count {
+    transform: translate(30%, -60%) !important;
 }
 
 // ── User profile dropdown ──────────────────────────────────────────────────────
