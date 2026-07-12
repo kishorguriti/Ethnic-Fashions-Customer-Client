@@ -41,7 +41,8 @@ const CheckoutPage: React.FC = () => {
   // ── Delivery / payment ────────────────────────────────────────────────────
   const [deliveryMethod, setDeliveryMethod] = useState<"standard" | "express">("standard");
   const [shippingCost, setShippingCost]     = useState(0);
-  const [paymentMethod, setPaymentMethod]   = useState<PlaceOrderPayload["paymentMethod"]>("cod");
+  // Storefront exposes just two modes; "online" hands off to Razorpay.
+  const [paymentMethod, setPaymentMethod]   = useState<"cod" | "online">("online");
 
   // ── Place order ───────────────────────────────────────────────────────────
   const [placing, setPlacing] = useState(false);
@@ -87,7 +88,9 @@ const CheckoutPage: React.FC = () => {
     const payload: PlaceOrderPayload = {
       addressId:      selectedAddrId,
       deliveryMethod,
-      paymentMethod,
+      // Backend treats any non-COD method as an online (Razorpay) payment; the
+      // exact instrument is chosen inside Razorpay's hosted checkout.
+      paymentMethod:  paymentMethod === "cod" ? "cod" : "upi",
       couponCode:     couponCode || undefined,
     };
 
