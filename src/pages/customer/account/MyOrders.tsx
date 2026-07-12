@@ -12,13 +12,31 @@ const statusColor = (status: string) => {
     case "shipped":
     case "processing":
     case "confirmed": return "processing";
+    case "return_requested":
+    case "return_approved":
+    case "return_received": return "warning";
     case "cancelled":
     case "returned": return "error";
     default: return "default";
   }
 };
 
+// Human-friendly labels, including the return lifecycle statuses.
+const STATUS_LABELS: Record<string, string> = {
+  pending:          "Pending",
+  confirmed:        "Confirmed",
+  processing:       "Processing",
+  shipped:          "Shipped",
+  delivered:        "Delivered",
+  cancelled:        "Cancelled",
+  return_requested: "Return Requested",
+  return_approved:  "Return Request Approved",
+  return_received:  "Return Product Received",
+  returned:         "Returned",
+};
+
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const statusLabel = (s: string) => STATUS_LABELS[s] || cap((s || "").replace(/_/g, " "));
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "—";
 
@@ -40,8 +58,9 @@ const MyOrders: React.FC = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  // Return request modal
+  // Return request modal — can be opened from the list card OR the details drawer.
   const [returnOpen, setReturnOpen] = useState(false);
+  const [returnOrder, setReturnOrder] = useState<Order | null>(null);
   const [returnLoading, setReturnLoading] = useState(false);
   const [returnForm] = Form.useForm();
   // Per-line selection: keyed by variant id → { checked, quantity }
@@ -54,6 +73,7 @@ const MyOrders: React.FC = () => {
       if (it.variant) sel[it.variant] = { checked: true, quantity: it.quantity };
     });
     setReturnSel(sel);
+    setReturnOrder(order);
     setReturnOpen(true);
   };
 
@@ -108,15 +128,23 @@ const MyOrders: React.FC = () => {
   };
 
   const canCancel = (o: Order) => !["shipped", "delivered", "cancelled", "returned"].includes(o.status);
-  const canReturn = (o: Order) => o.status === "delivered";
+
+  // Return is allowed only for delivered orders that are still inside the return
+  // window. The window is per-product (returnPeriodDays, default 14 days) and the
+  // backend supplies `returnEligibleUntil`; if it's absent we allow (delivered).
+  const returnWindowOpen = (o: Order) =>
+    !o.returnEligibleUntil || Date.now() <= new Date(o.returnEligibleUntil).getTime();
+  const canReturn = (o: Order) => o.status === "delivered" && returnWindowOpen(o);
+  const windowClosed = (o: Order) =>
+    o.status === "delivered" && !returnWindowOpen(o);
 
   const submitReturn = async () => {
-    if (!detail) return;
+    if (!returnOrder) return;
     try {
       const values = await returnForm.validateFields();
 
       // Collect the selected lines.
-      const selectedItems = detail.items
+      const selectedItems = returnOrder.items
         .filter((it) => it.variant && returnSel[it.variant]?.checked && returnSel[it.variant]?.quantity > 0)
         .map((it) => ({ variant: it.variant as string, quantity: returnSel[it.variant!].quantity }));
 
@@ -127,12 +155,12 @@ const MyOrders: React.FC = () => {
 
       // If every line is fully selected, omit `items` for a clean whole-order return.
       const allFull =
-        selectedItems.length === detail.items.length &&
-        detail.items.every((it) => it.variant && returnSel[it.variant]?.quantity === it.quantity);
+        selectedItems.length === returnOrder.items.length &&
+        returnOrder.items.every((it) => it.variant && returnSel[it.variant]?.quantity === it.quantity);
 
       setReturnLoading(true);
       await requestReturn({
-        orderId: detail._id,
+        orderId: returnOrder._id,
         reason: values.reason as ReturnReason,
         reasonText: values.reasonText || undefined,
         items: allFull ? undefined : selectedItems,
@@ -140,6 +168,8 @@ const MyOrders: React.FC = () => {
       message.success("Return request submitted. We'll review it shortly.");
       setReturnOpen(false);
       returnForm.resetFields();
+      setDetail(null);       // close the drawer if it was open
+      load();                // refresh so the order shows its new return status
     } catch (err: any) {
       if (err?.errorFields) return; // form validation
       message.error(err.response?.data?.message || "Could not submit return request");
@@ -164,7 +194,7 @@ const MyOrders: React.FC = () => {
                 <Title level={5} className="m-0">Order #{order.orderNumber}</Title>
                 <Text type="secondary">Placed on {fmtDate(order.createdAt)}</Text>
               </div>
-              <Tag color={statusColor(order.status)} className="status-tag">{cap(order.status)}</Tag>
+              <Tag color={statusColor(order.status)} className="status-tag">{statusLabel(order.status)}</Tag>
             </div>
 
             <div className="product-thumbnails mb-4">
@@ -186,8 +216,19 @@ const MyOrders: React.FC = () => {
                 <Text strong className="total-price">₹{order.total.toLocaleString("en-IN")}</Text>
                 <Text type="secondary" className="d-block small">{paymentLabel(order)}</Text>
               </div>
-              <Button className="view-details-btn" onClick={() => openDetails(order._id)}>View Details</Button>
+              <Space wrap>
+                {canReturn(order) && (
+                  <Button className="return-order-btn" onClick={() => openReturn(order)}>Return Item</Button>
+                )}
+                <Button className="view-details-btn" onClick={() => openDetails(order._id)}>View Details</Button>
+              </Space>
             </div>
+
+            {["return_requested", "return_approved", "return_received", "returned"].includes(order.status) && (
+              <Text type="secondary" className="d-block small mt-2">
+                Return status: <b>{statusLabel(order.status)}</b>
+              </Text>
+            )}
           </Card>
         ))
       )}
@@ -197,13 +238,16 @@ const MyOrders: React.FC = () => {
         open={detailLoading || !!detail}
         onClose={() => setDetail(null)}
         width={480}
+        // Site header is position:fixed z-index:1100 — keep the drawer above it
+        // so its title isn't hidden behind the header on mobile.
+        zIndex={1300}
       >
         {detailLoading || !detail ? (
           <Skeleton active paragraph={{ rows: 8 }} />
         ) : (
           <>
             <Descriptions column={1} size="small" bordered>
-              <Descriptions.Item label="Status"><Tag color={statusColor(detail.status)}>{cap(detail.status)}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Status"><Tag color={statusColor(detail.status)}>{statusLabel(detail.status)}</Tag></Descriptions.Item>
               <Descriptions.Item label="Placed on">{fmtDate(detail.createdAt)}</Descriptions.Item>
               <Descriptions.Item label="Estimated delivery">{fmtDate(detail.estimatedDelivery)}</Descriptions.Item>
               <Descriptions.Item label="Payment">{paymentLabel(detail)}</Descriptions.Item>
@@ -254,26 +298,40 @@ const MyOrders: React.FC = () => {
                 Request Return
               </Button>
             )}
+
+            {windowClosed(detail) && (
+              <Text type="secondary" className="d-block text-center mt-3">
+                The return window for this order has closed.
+              </Text>
+            )}
+
+            {["return_requested", "return_approved", "return_received", "returned"].includes(detail.status) && (
+              <Text type="secondary" className="d-block text-center mt-3">
+                Return status: <b>{statusLabel(detail.status)}</b>
+              </Text>
+            )}
           </>
         )}
       </Drawer>
 
       <Modal
         open={returnOpen}
-        title={detail ? `Return — Order #${detail.orderNumber}` : "Request Return"}
+        title={returnOrder ? `Return — Order #${returnOrder.orderNumber}` : "Request Return"}
         okText="Submit Request"
         confirmLoading={returnLoading}
         onCancel={() => { setReturnOpen(false); returnForm.resetFields(); }}
         onOk={submitReturn}
         destroyOnClose
+        // Must sit above the details drawer (zIndex 1300) when opened from within it.
+        zIndex={1400}
       >
         <Text type="secondary" className="d-block mb-3">
           Select the items you want to return. Approved returns are refunded to your original payment method.
         </Text>
 
-        {detail && (
+        {returnOrder && (
           <div className="return-items-list mb-3">
-            {detail.items.map((it: OrderItem, idx) => {
+            {returnOrder.items.map((it: OrderItem, idx) => {
               const key = it.variant || String(idx);
               const sel = it.variant ? returnSel[it.variant] : undefined;
               const disabled = !it.variant;
@@ -319,7 +377,7 @@ const MyOrders: React.FC = () => {
         <Divider className="my-2" />
         <div className="d-flex justify-content-between">
           <Text strong>Estimated refund</Text>
-          <Text strong>₹{returnEstimate(detail).toLocaleString("en-IN")}</Text>
+          <Text strong>₹{returnEstimate(returnOrder).toLocaleString("en-IN")}</Text>
         </div>
       </Modal>
     </Card>

@@ -10,6 +10,7 @@ const { Title, Text } = Typography;
 
 const PAYMENT_LABELS: Record<string, string> = {
   cod:        "Cash on Delivery",
+  online:     "Pay Online (Razorpay)",
   card:       "Credit / Debit Card",
   upi:        "UPI",
   netbanking: "Net Banking",

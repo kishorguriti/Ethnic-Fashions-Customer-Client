@@ -45,6 +45,8 @@ export interface Order {
   currency: string;
   deliveryMethod: "standard" | "express";
   estimatedDelivery: string | null;
+  // Populated once delivered — the per-product return window deadline (backend).
+  returnEligibleUntil?: string | null;
   payment: OrderPayment;
   createdAt: string;
   // Convenience alias used by the confirmation screen.
