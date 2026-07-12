@@ -41,4 +41,7 @@ export interface CartState {
   loading: boolean;
   mutating: boolean; // true while add/remove/update is in-flight
   error: string | null;
+  // Applied coupon persisted from the cart page so checkout can reuse it.
+  couponCode: string | null;
+  discount: number;
 }

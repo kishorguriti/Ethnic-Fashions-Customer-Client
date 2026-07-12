@@ -8,7 +8,7 @@ import {
 } from "../../services/cartApi";
 import type { CartState } from "../../types/cart";
 
-const emptyCart = { items: [], subtotal: 0, totalItems: 0 };
+const emptyCart = { items: [], subtotal: 0, totalItems: 0, couponCode: null, discount: 0 };
 
 const initialState: CartState = {
   ...emptyCart,
@@ -68,7 +68,13 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     // Called on logout to wipe local cart state without an API call
-    resetCart: (state) => { Object.assign(state, emptyCart); }
+    resetCart: (state) => { Object.assign(state, emptyCart); },
+    // Persist / clear the coupon applied on the cart page so checkout can reuse it.
+    setCoupon: (state, action: { payload: { code: string; discount: number } }) => {
+      state.couponCode = action.payload.code;
+      state.discount   = action.payload.discount;
+    },
+    clearCoupon: (state) => { state.couponCode = null; state.discount = 0; },
   },
   extraReducers: (builder) => {
     // fetch
@@ -79,7 +85,13 @@ const cartSlice = createSlice({
 
     // add / update / remove — all return the new cart snapshot from server
     const mutationPending   = (state: CartState) => { state.mutating = true; state.error = null; };
-    const mutationFulfilled = (state: CartState, action: any) => { state.mutating = false; if (action.payload) setCartData(state, action.payload); };
+    const mutationFulfilled = (state: CartState, action: any) => {
+      state.mutating = false;
+      if (action.payload) setCartData(state, action.payload);
+      // Contents changed → a previously applied coupon may no longer be valid.
+      state.couponCode = null;
+      state.discount = 0;
+    };
     const mutationRejected  = (state: CartState, action: any) => { state.mutating = false; state.error = action.payload as string; };
 
     builder
@@ -98,5 +110,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { resetCart } = cartSlice.actions;
+export const { resetCart, setCoupon, clearCoupon } = cartSlice.actions;
 export default cartSlice.reducer;

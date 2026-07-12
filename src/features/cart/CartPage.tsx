@@ -6,7 +6,7 @@ import {
 } from "antd";
 import { DeleteOutlined, CheckCircleOutlined, CloseCircleOutlined, GiftOutlined } from "@ant-design/icons";
 import { useAppDispatch, useCartSelector } from "../../hooks";
-import { updateQty, removeFromCart, clearCart } from "./cartSlice";
+import { updateQty, removeFromCart, clearCart, setCoupon, clearCoupon } from "./cartSlice";
 import { validateCoupon } from "../../services/couponApi";
 import type { AppliedCoupon } from "../../types/coupon";
 import AvailableCoupons from "./AvailableCoupons";
@@ -51,6 +51,8 @@ const CartPage: React.FC = () => {
       const result = await validateCoupon(code.trim().toUpperCase(), subtotal);
       setAppliedCoupon(result);
       setCouponCode(result.code);
+      // Persist to the cart slice so the checkout flow can apply the same coupon.
+      dispatch(setCoupon({ code: result.code, discount: result.discountAmount }));
       message.success(`Coupon applied! You save ₹${result.discountAmount.toLocaleString()}`);
     } catch (err: any) {
       setCouponError(err.response?.data?.message || "Invalid or expired coupon");
@@ -70,6 +72,7 @@ const CartPage: React.FC = () => {
     setAppliedCoupon(null);
     setCouponCode("");
     setCouponError(null);
+    dispatch(clearCoupon());
   };
 
   if (loading) {

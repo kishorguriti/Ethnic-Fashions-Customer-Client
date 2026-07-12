@@ -8,9 +8,11 @@ import {
   CheckCircleFilled, SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useAppSelector } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../hooks";
 import { getAddresses, addAddressApi } from "../../services/customerApi";
-import { placeOrder } from "../../services/orderApi";
+import { createOrder, verifyPayment } from "../../services/orderApi";
+import { fetchCart } from "../cart/cartSlice";
+import { loadRazorpayScript, openRazorpayCheckout } from "../../services/razorpay";
 import type { Address, AddressPayload } from "../../types/address";
 import type { PlaceOrderPayload } from "../../services/orderApi";
 import DeliveryStep from "./DeliveryStep";
@@ -24,8 +26,9 @@ const STEPS = ["Shipping", "Delivery", "Payment", "Review"];
 
 const CheckoutPage: React.FC = () => {
   const navigate  = useNavigate();
+  const dispatch  = useAppDispatch();
   const cartState = useAppSelector((s) => s.cart);
-  const { items, subtotal, totalItems } = cartState as any;
+  const { items, subtotal, totalItems, couponCode, discount } = cartState as any;
 
   // ── Step state ────────────────────────────────────────────────────────────
   const [step, setStep]           = useState(0);
@@ -76,27 +79,74 @@ const CheckoutPage: React.FC = () => {
     setStep((s) => Math.min(s + 1, 3));
   };
 
-  // ── Place order ───────────────────────────────────────────────────────────
+  // ── Place order (Razorpay online OR COD) ────────────────────────────────────
   const handlePlaceOrder = async () => {
     if (!selectedAddrId) { message.error("No address selected"); return; }
     setPlacing(true);
+
+    const payload: PlaceOrderPayload = {
+      addressId:      selectedAddrId,
+      deliveryMethod,
+      paymentMethod,
+      couponCode:     couponCode || undefined,
+    };
+
     try {
-      const result = await placeOrder({
-        addressId:      selectedAddrId,
-        deliveryMethod,
-        paymentMethod,
+      const { order, razorpay } = await createOrder(payload);
+
+      // ── COD: order already confirmed on the server ──
+      if (paymentMethod === "cod" || !razorpay) {
+        dispatch(fetchCart());               // server cleared the cart
+        navigate("/order-placed", { state: { order } });
+        return;
+      }
+
+      // ── Online: open Razorpay hosted checkout ──
+      const loaded = await loadRazorpayScript();
+      if (!loaded) {
+        message.error("Could not load the payment gateway. Please try again.");
+        setPlacing(false);
+        return;
+      }
+
+      openRazorpayCheckout({
+        key:         razorpay.key,
+        orderId:     razorpay.orderId,
+        amount:      razorpay.amount,
+        currency:    razorpay.currency,
+        name:        razorpay.name,
+        description: razorpay.description,
+        prefill:     razorpay.prefill,
+        onSuccess: async (resp) => {
+          try {
+            const verified = await verifyPayment({
+              razorpayOrderId:   resp.razorpay_order_id,
+              razorpayPaymentId: resp.razorpay_payment_id,
+              razorpaySignature: resp.razorpay_signature,
+            });
+            dispatch(fetchCart());
+            navigate("/order-placed", { state: { order: verified } });
+          } catch (err: any) {
+            message.error(err.response?.data?.message || "Payment verification failed. If money was deducted it will be refunded.");
+            setPlacing(false);
+          }
+        },
+        onDismiss: () => {
+          message.info("Payment cancelled. Your order is saved and can be paid from your orders.");
+          setPlacing(false);
+        },
       });
-      navigate("/order-placed", { state: { order: result } });
     } catch (err: any) {
       message.error(err.response?.data?.message || "Failed to place order. Try again.");
-    } finally {
       setPlacing(false);
     }
   };
 
-  // ── Derived totals ────────────────────────────────────────────────────────
-  const tax   = (subtotal ?? 0) * 0.08;
-  const total = (subtotal ?? 0) + shippingCost + tax;
+  // ── Derived totals (mirrors the server: tax on the post-discount amount) ────
+  const orderDiscount = discount ?? 0;
+  const taxable = Math.max(0, (subtotal ?? 0) - orderDiscount);
+  const tax     = Math.round(taxable * 0.08);
+  const total   = taxable + shippingCost + tax;
 
   const selectedAddress = addresses.find((a) => a._id === selectedAddrId) ?? null;
 
@@ -163,6 +213,8 @@ const CheckoutPage: React.FC = () => {
                 paymentMethod={paymentMethod}
                 items={items ?? []}
                 subtotal={subtotal ?? 0}
+                discount={orderDiscount}
+                couponCode={couponCode ?? ""}
               />
             )}
 
@@ -242,6 +294,12 @@ const CheckoutPage: React.FC = () => {
                   <Text type="secondary">Subtotal</Text>
                   <Text strong>₹{(subtotal ?? 0).toLocaleString()}</Text>
                 </div>
+                {orderDiscount > 0 && (
+                  <div className="price-line">
+                    <Text type="secondary">Discount{couponCode ? ` (${couponCode})` : ""}</Text>
+                    <Text type="success" strong>−₹{orderDiscount.toLocaleString()}</Text>
+                  </div>
+                )}
                 <div className="price-line">
                   <Text type="secondary">Shipping</Text>
                   {shippingCost > 0

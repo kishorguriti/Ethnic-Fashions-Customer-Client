@@ -23,13 +23,17 @@ interface Props {
   paymentMethod:  string;
   items:          any[];
   subtotal:       number;
+  discount?:      number;
+  couponCode?:    string;
 }
 
 const ReviewStep: React.FC<Props> = ({
   address, deliveryMethod, shippingCost, paymentMethod, items, subtotal,
+  discount = 0, couponCode = "",
 }) => {
-  const tax   = subtotal * 0.08;
-  const total = subtotal + shippingCost + tax;
+  const taxable = Math.max(0, subtotal - discount);
+  const tax     = Math.round(taxable * 0.08);
+  const total   = taxable + shippingCost + tax;
 
   return (
     <div className="review-step-container">
@@ -74,6 +78,12 @@ const ReviewStep: React.FC<Props> = ({
             <Text type="secondary">Subtotal</Text>
             <Text>₹{subtotal.toLocaleString()}</Text>
           </div>
+          {discount > 0 && (
+            <div className="d-flex justify-content-between">
+              <Text type="secondary">Discount{couponCode ? ` (${couponCode})` : ""}</Text>
+              <Text type="success">−₹{discount.toLocaleString()}</Text>
+            </div>
+          )}
           <div className="d-flex justify-content-between">
             <Text type="secondary">Shipping ({deliveryMethod})</Text>
             {shippingCost > 0
