@@ -69,7 +69,7 @@ const wishlistSlice = createSlice({
         state.toggling = null;
         const { variantId, action: act } = action.payload;
         if (act === "removed") {
-          state.items         = state.items.filter((i) => i.variant._id !== variantId);
+          state.items         = state.items.filter((i) => i?.variant?._id !== variantId);
           state.wishlistedIds = state.wishlistedIds.filter((id) => id !== variantId);
           state.total         = Math.max(0, state.total - 1);
         } else {
