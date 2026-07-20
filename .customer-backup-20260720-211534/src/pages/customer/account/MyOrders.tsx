@@ -1,59 +1,44 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card, Typography, Button, Empty, Skeleton, Drawer, Descriptions, Divider,
-  message, Popconfirm, Modal, Form, Select, Input, Checkbox, InputNumber,
-  Upload, Image,
-} from "antd";
-import type { UploadFile } from "antd";
-import {
-  ClockCircleOutlined, CheckCircleOutlined, SyncOutlined, CarOutlined,
-  HomeOutlined, CloseCircleOutlined, RollbackOutlined, FileDoneOutlined,
-  PlusOutlined, DownloadOutlined,
-} from "@ant-design/icons";
-import { getMyOrders, getOrder, cancelOrder, getInvoice } from "../../../services/orderApi";
+import { Card, Typography, Tag, Button, Space, Empty, Skeleton, Drawer, Descriptions, Divider, message, Popconfirm, Modal, Form, Select, Input, Checkbox, InputNumber } from "antd";
+import { getMyOrders, getOrder, cancelOrder } from "../../../services/orderApi";
 import type { Order, OrderItem } from "../../../services/orderApi";
-import {
-  requestReturn, uploadReturnImage, REASON_OPTIONS, type ReturnReason,
-} from "../../../services/returnApi";
+import { requestReturn, REASON_OPTIONS, type ReturnReason } from "../../../services/returnApi";
 
 const { Title, Text } = Typography;
 
-/**
- * Every status rendered as an icon + colour, so the state of an order is
- * legible at a glance rather than as a word in a grey tag.
- */
-const STATUS_META: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
-  pending:          { label: "Pending",            icon: <ClockCircleOutlined />, cls: "pill-pending" },
-  confirmed:        { label: "Confirmed",          icon: <CheckCircleOutlined />, cls: "pill-confirmed" },
-  processing:       { label: "Processing",         icon: <SyncOutlined spin />,   cls: "pill-processing" },
-  shipped:          { label: "Shipped",            icon: <CarOutlined />,         cls: "pill-shipped" },
-  delivered:        { label: "Delivered",          icon: <HomeOutlined />,        cls: "pill-delivered" },
-  cancelled:        { label: "Cancelled",          icon: <CloseCircleOutlined />, cls: "pill-cancelled" },
-  return_requested: { label: "Return Requested",   icon: <RollbackOutlined />,    cls: "pill-return" },
-  return_approved:  { label: "Return Approved",    icon: <RollbackOutlined />,    cls: "pill-return" },
-  return_received:  { label: "Return Received",    icon: <RollbackOutlined />,    cls: "pill-return" },
-  returned:         { label: "Returned",           icon: <RollbackOutlined />,    cls: "pill-returned" },
+const statusColor = (status: string) => {
+  switch (status) {
+    case "delivered": return "success";
+    case "shipped":
+    case "processing":
+    case "confirmed": return "processing";
+    case "return_requested":
+    case "return_approved":
+    case "return_received": return "warning";
+    case "cancelled":
+    case "returned": return "error";
+    default: return "default";
+  }
+};
+
+// Human-friendly labels, including the return lifecycle statuses.
+const STATUS_LABELS: Record<string, string> = {
+  pending:          "Pending",
+  confirmed:        "Confirmed",
+  processing:       "Processing",
+  shipped:          "Shipped",
+  delivered:        "Delivered",
+  cancelled:        "Cancelled",
+  return_requested: "Return Requested",
+  return_approved:  "Return Request Approved",
+  return_received:  "Return Product Received",
+  returned:         "Returned",
 };
 
 const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-const statusMeta = (s: string) =>
-  STATUS_META[s] ?? { label: cap((s || "").replace(/_/g, " ")), icon: <ClockCircleOutlined />, cls: "pill-pending" };
-
-const StatusPill: React.FC<{ status: string }> = ({ status }) => {
-  const m = statusMeta(status);
-  return (
-    <span className={`order-status-pill ${m.cls}`}>
-      {m.icon}
-      <span>{m.label}</span>
-    </span>
-  );
-};
-
+const statusLabel = (s: string) => STATUS_LABELS[s] || cap((s || "").replace(/_/g, " "));
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "—";
-
-const fmtShort = (d?: string | null) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
 
 const paymentLabel = (o: Order) => {
   if (o.payment.method === "cod") return o.payment.status === "paid" ? "COD · Paid" : "Cash on Delivery";
@@ -66,88 +51,12 @@ const paymentLabel = (o: Order) => {
   }
 };
 
-/**
- * Fulfilment tracker.
- *
- * Dates come from the order's own timeline where the backend recorded them, so
- * this reflects what actually happened rather than a guess. While an order is in
- * transit the courier is not yet integrated, so the promised date is the
- * server's estimate (shipped + 7 days) and is labelled as expected, not known.
- */
-const OrderTracking: React.FC<{ order: Order }> = ({ order }) => {
-  const STEPS = [
-    { key: "placed",    label: "Order Placed", icon: <FileDoneOutlined /> },
-    { key: "confirmed", label: "Confirmed",    icon: <CheckCircleOutlined /> },
-    { key: "shipped",   label: "Shipped",      icon: <CarOutlined /> },
-    { key: "delivered", label: "Delivered",    icon: <HomeOutlined /> },
-  ];
-
-  // First timeline entry for a status wins — later duplicates are corrections.
-  const dateFor = (key: string): string | null => {
-    const hit = order.timeline?.find((t) => t.status === key);
-    if (hit) return hit.at;
-    if (key === "placed") return order.createdAt;
-    if (key === "shipped") return order.shippedAt ?? null;
-    if (key === "delivered") return order.deliveredAt ?? null;
-    return null;
-  };
-
-  const reached: Record<string, number> = {
-    pending: 0, confirmed: 1, processing: 1, shipped: 2, delivered: 3,
-    return_requested: 3, return_approved: 3, return_received: 3, returned: 3,
-  };
-  const currentIdx = reached[order.status] ?? 0;
-
-  if (order.status === "cancelled") {
-    return (
-      <div className="order-tracking cancelled-note">
-        <CloseCircleOutlined />
-        <span>This order was cancelled{order.timeline?.find((t) => t.status === "cancelled")?.at
-          ? ` on ${fmtShort(order.timeline.find((t) => t.status === "cancelled")!.at)}`
-          : ""}.</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="order-tracking">
-      {STEPS.map((step, idx) => {
-        const done = idx <= currentIdx;
-        const active = idx === currentIdx;
-        const at = dateFor(step.key);
-        return (
-          <div key={step.key} className={`track-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}>
-            <div className="track-marker">
-              <span className="track-icon">{step.icon}</span>
-              {idx < STEPS.length - 1 && <span className="track-line" />}
-            </div>
-            <div className="track-body">
-              <div className="track-label">{step.label}</div>
-              <div className="track-date">
-                {at ? fmtShort(at) : active ? "In progress" : "Pending"}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      {order.status === "shipped" && order.estimatedDelivery && (
-        <div className="track-eta">
-          <CarOutlined />
-          <span>Expected delivery by <strong>{fmtShort(order.estimatedDelivery)}</strong></span>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const MyOrders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<Order | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [invoiceLoading, setInvoiceLoading] = useState(false);
 
   // Return request modal — can be opened from the list card OR the details drawer.
   const [returnOpen, setReturnOpen] = useState(false);
@@ -156,9 +65,6 @@ const MyOrders: React.FC = () => {
   const [returnForm] = Form.useForm();
   // Per-line selection: keyed by variant id → { checked, quantity }
   const [returnSel, setReturnSel] = useState<Record<string, { checked: boolean; quantity: number }>>({});
-  // Evidence photos already uploaded for this request.
-  const [returnImages, setReturnImages] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
 
   const openReturn = (order: Order) => {
     returnForm.resetFields();
@@ -167,7 +73,6 @@ const MyOrders: React.FC = () => {
       if (it.variant) sel[it.variant] = { checked: true, quantity: it.quantity };
     });
     setReturnSel(sel);
-    setReturnImages([]);
     setReturnOrder(order);
     setReturnOpen(true);
   };
@@ -175,13 +80,8 @@ const MyOrders: React.FC = () => {
   const setLineChecked = (variant: string, checked: boolean) =>
     setReturnSel((prev) => ({ ...prev, [variant]: { ...prev[variant], checked } }));
 
-  // Clamped here as well as on the input: a typed value can otherwise land in
-  // state above the ordered quantity, and the server rejects it outright.
-  const setLineQty = (variant: string, quantity: number, max: number) =>
-    setReturnSel((prev) => ({
-      ...prev,
-      [variant]: { ...prev[variant], quantity: Math.max(1, Math.min(quantity, max)) },
-    }));
+  const setLineQty = (variant: string, quantity: number) =>
+    setReturnSel((prev) => ({ ...prev, [variant]: { ...prev[variant], quantity } }));
 
   // Live refund estimate from the current selection.
   const returnEstimate = (order: Order | null) =>
@@ -227,47 +127,16 @@ const MyOrders: React.FC = () => {
     }
   };
 
-  const handleInvoice = async (id: string) => {
-    setInvoiceLoading(true);
-    try {
-      const invoice = await getInvoice(id);
-      window.open(invoice.url, "_blank", "noopener");
-    } catch (err: any) {
-      message.error(err.response?.data?.message || "Invoice is not available yet");
-    } finally {
-      setInvoiceLoading(false);
-    }
-  };
-
   const canCancel = (o: Order) => !["shipped", "delivered", "cancelled", "returned"].includes(o.status);
 
   // Return is allowed only for delivered orders that are still inside the return
-  // window. The window is per-product (returnPeriodDays) and the backend supplies
-  // `returnEligibleUntil`; if it's absent we allow (delivered).
+  // window. The window is per-product (returnPeriodDays, default 14 days) and the
+  // backend supplies `returnEligibleUntil`; if it's absent we allow (delivered).
   const returnWindowOpen = (o: Order) =>
     !o.returnEligibleUntil || Date.now() <= new Date(o.returnEligibleUntil).getTime();
   const canReturn = (o: Order) => o.status === "delivered" && returnWindowOpen(o);
-  const windowClosed = (o: Order) => o.status === "delivered" && !returnWindowOpen(o);
-  const hasInvoice = (o: Order) => o.payment.status === "paid";
-
-  // Uploads immediately and keeps only the resulting URL — the request payload
-  // carries URLs, not files.
-  const handleUpload = async (file: File) => {
-    if (returnImages.length >= 5) {
-      message.warning("You can attach up to 5 photos");
-      return false;
-    }
-    setUploading(true);
-    try {
-      const url = await uploadReturnImage(file);
-      setReturnImages((prev) => [...prev, url]);
-    } catch (err: any) {
-      message.error(err.response?.data?.message || "Could not upload that photo");
-    } finally {
-      setUploading(false);
-    }
-    return false; // stop antd's own upload
-  };
+  const windowClosed = (o: Order) =>
+    o.status === "delivered" && !returnWindowOpen(o);
 
   const submitReturn = async () => {
     if (!returnOrder) return;
@@ -295,12 +164,10 @@ const MyOrders: React.FC = () => {
         reason: values.reason as ReturnReason,
         reasonText: values.reasonText || undefined,
         items: allFull ? undefined : selectedItems,
-        customerImages: returnImages.length ? returnImages : undefined,
       });
       message.success("Return request submitted. We'll review it shortly.");
       setReturnOpen(false);
       returnForm.resetFields();
-      setReturnImages([]);
       setDetail(null);       // close the drawer if it was open
       load();                // refresh so the order shows its new return status
     } catch (err: any) {
@@ -311,21 +178,9 @@ const MyOrders: React.FC = () => {
     }
   };
 
-  const uploadFileList: UploadFile[] = returnImages.map((url, idx) => ({
-    uid: String(idx),
-    name: `photo-${idx + 1}.jpg`,
-    status: "done",
-    url,
-  }));
-
   return (
-    <Card className="orders-container-card" variant="borderless">
-      <div className="orders-head d-flex justify-content-between align-items-center mb-4">
-        <Title level={3} className="section-title m-0">My Orders</Title>
-        {!loading && orders.length > 0 && (
-          <Text type="secondary" className="small">{orders.length} order{orders.length === 1 ? "" : "s"}</Text>
-        )}
-      </div>
+    <Card className="orders-container-card" bordered={false}>
+      <Title level={3} className="section-title mb-4">My Orders</Title>
 
       {loading ? (
         <Skeleton active paragraph={{ rows: 6 }} />
@@ -333,54 +188,46 @@ const MyOrders: React.FC = () => {
         <Empty description="You haven't placed any orders yet" />
       ) : (
         orders.map((order) => (
-          <Card key={order._id} className="order-item-card mb-4" variant="outlined">
+          <Card key={order._id} className="order-item-card mb-4" bordered>
             <div className="order-header d-flex justify-content-between align-items-start mb-3">
               <div>
-                <Title level={5} className="m-0 order-number">Order #{order.orderNumber}</Title>
-                <Text type="secondary" className="small">Placed on {fmtDate(order.createdAt)}</Text>
+                <Title level={5} className="m-0">Order #{order.orderNumber}</Title>
+                <Text type="secondary">Placed on {fmtDate(order.createdAt)}</Text>
               </div>
-              <StatusPill status={order.status} />
+              <Tag color={statusColor(order.status)} className="status-tag">{statusLabel(order.status)}</Tag>
             </div>
 
-            <div className="product-thumbnails mb-3 d-flex align-items-center gap-2 flex-wrap">
-              {order.items.slice(0, 4).map((it, idx) =>
-                it.image ? (
-                  <div key={idx} className="thumb-wrapper">
-                    <img src={it.image} alt={it.name} />
-                  </div>
-                ) : null
-              )}
-              {order.items.length > 4 && (
-                <span className="thumb-more">+{order.items.length - 4}</span>
-              )}
+            <div className="product-thumbnails mb-4">
+              <Space size="middle">
+                {order.items.slice(0, 4).map((it, idx) =>
+                  it.image ? (
+                    <div key={idx} className="thumb-wrapper">
+                      <img src={it.image} alt={it.name} />
+                    </div>
+                  ) : null
+                )}
+                {order.items.length > 4 && <Text type="secondary">+{order.items.length - 4} more</Text>}
+              </Space>
             </div>
 
-            {/* Compact tracker on the card; the drawer carries the full one. */}
-            {!["cancelled"].includes(order.status) && <OrderTracking order={order} />}
-
-            <div className="order-footer d-flex justify-content-between align-items-center flex-wrap gap-3 pt-3">
+            <div className="order-footer d-flex justify-content-between align-items-center pt-3">
               <div>
                 <Text type="secondary" className="d-block small">Total Amount</Text>
                 <Text strong className="total-price">₹{order.total.toLocaleString("en-IN")}</Text>
                 <Text type="secondary" className="d-block small">{paymentLabel(order)}</Text>
               </div>
-              <div className="order-actions d-flex align-items-center gap-2 flex-wrap">
+              <Space wrap>
                 {canReturn(order) && (
-                  <Button className="return-order-btn" icon={<RollbackOutlined />} onClick={() => openReturn(order)}>
-                    Return
-                  </Button>
+                  <Button className="return-order-btn" onClick={() => openReturn(order)}>Return Item</Button>
                 )}
-                <Button className="view-details-btn" onClick={() => openDetails(order._id)}>
-                  View Details
-                </Button>
-              </div>
+                <Button className="view-details-btn" onClick={() => openDetails(order._id)}>View Details</Button>
+              </Space>
             </div>
 
             {["return_requested", "return_approved", "return_received", "returned"].includes(order.status) && (
-              <div className="return-status-note mt-3">
-                <RollbackOutlined />
-                <span>Return status: <b>{statusMeta(order.status).label}</b></span>
-              </div>
+              <Text type="secondary" className="d-block small mt-2">
+                Return status: <b>{statusLabel(order.status)}</b>
+              </Text>
             )}
           </Card>
         ))
@@ -391,7 +238,6 @@ const MyOrders: React.FC = () => {
         open={detailLoading || !!detail}
         onClose={() => setDetail(null)}
         width={480}
-        className="order-detail-drawer"
         // Site header is position:fixed z-index:1100 — keep the drawer above it
         // so its title isn't hidden behind the header on mobile.
         zIndex={1300}
@@ -400,19 +246,10 @@ const MyOrders: React.FC = () => {
           <Skeleton active paragraph={{ rows: 8 }} />
         ) : (
           <>
-            <div className="drawer-status-row mb-3">
-              <StatusPill status={detail.status} />
-            </div>
-
-            <div className="drawer-tracking-panel mb-3">
-              <OrderTracking order={detail} />
-            </div>
-
             <Descriptions column={1} size="small" bordered>
+              <Descriptions.Item label="Status"><Tag color={statusColor(detail.status)}>{statusLabel(detail.status)}</Tag></Descriptions.Item>
               <Descriptions.Item label="Placed on">{fmtDate(detail.createdAt)}</Descriptions.Item>
-              <Descriptions.Item label={detail.status === "delivered" ? "Delivered on" : "Estimated delivery"}>
-                {fmtDate(detail.status === "delivered" ? detail.deliveredAt : detail.estimatedDelivery)}
-              </Descriptions.Item>
+              <Descriptions.Item label="Estimated delivery">{fmtDate(detail.estimatedDelivery)}</Descriptions.Item>
               <Descriptions.Item label="Payment">{paymentLabel(detail)}</Descriptions.Item>
             </Descriptions>
 
@@ -450,27 +287,15 @@ const MyOrders: React.FC = () => {
               </>
             )}
 
-            {hasInvoice(detail) && (
-              <Button
-                block
-                className="mt-4 invoice-btn"
-                icon={<DownloadOutlined />}
-                loading={invoiceLoading}
-                onClick={() => handleInvoice(detail._id)}
-              >
-                Download Invoice
-              </Button>
-            )}
-
             {canCancel(detail) && (
               <Popconfirm title="Cancel this order?" description="Paid online orders are automatically refunded." okText="Yes, cancel" onConfirm={() => handleCancel(detail._id)}>
-                <Button danger block className="mt-3" loading={cancelling}>Cancel Order</Button>
+                <Button danger block className="mt-4" loading={cancelling}>Cancel Order</Button>
               </Popconfirm>
             )}
 
             {canReturn(detail) && (
-              <Button block className="mt-3 return-order-btn" icon={<RollbackOutlined />} onClick={() => openReturn(detail)}>
-                Return
+              <Button block className="mt-3" onClick={() => openReturn(detail)}>
+                Request Return
               </Button>
             )}
 
@@ -481,10 +306,9 @@ const MyOrders: React.FC = () => {
             )}
 
             {["return_requested", "return_approved", "return_received", "returned"].includes(detail.status) && (
-              <div className="return-status-note mt-3">
-                <RollbackOutlined />
-                <span>Return status: <b>{statusMeta(detail.status).label}</b></span>
-              </div>
+              <Text type="secondary" className="d-block text-center mt-3">
+                Return status: <b>{statusLabel(detail.status)}</b>
+              </Text>
             )}
           </>
         )}
@@ -497,8 +321,7 @@ const MyOrders: React.FC = () => {
         confirmLoading={returnLoading}
         onCancel={() => { setReturnOpen(false); returnForm.resetFields(); }}
         onOk={submitReturn}
-        destroyOnHidden
-        className="return-request-modal"
+        destroyOnClose
         // Must sit above the details drawer (zIndex 1300) when opened from within it.
         zIndex={1400}
       >
@@ -513,7 +336,7 @@ const MyOrders: React.FC = () => {
               const sel = it.variant ? returnSel[it.variant] : undefined;
               const disabled = !it.variant;
               return (
-                <div key={key} className="return-line d-flex align-items-center gap-2 mb-2" style={{ opacity: disabled ? 0.5 : 1 }}>
+                <div key={key} className="d-flex align-items-center gap-2 mb-2" style={{ opacity: disabled ? 0.5 : 1 }}>
                   <Checkbox
                     checked={!!sel?.checked}
                     disabled={disabled}
@@ -532,7 +355,7 @@ const MyOrders: React.FC = () => {
                     max={it.quantity}
                     value={sel?.quantity ?? it.quantity}
                     disabled={disabled || !sel?.checked}
-                    onChange={(v) => it.variant && setLineQty(it.variant, Number(v) || 1, it.quantity)}
+                    onChange={(v) => it.variant && setLineQty(it.variant, Number(v) || 1)}
                     style={{ width: 64 }}
                   />
                   <Text type="secondary" className="small" style={{ whiteSpace: "nowrap" }}>/ {it.quantity}</Text>
@@ -551,35 +374,8 @@ const MyOrders: React.FC = () => {
           </Form.Item>
         </Form>
 
-        {/* Photos make a damage or wrong-item claim reviewable rather than a
-            judgement call on wording alone. */}
-        <div className="return-photos mb-3">
-          <Text strong className="d-block mb-1">Add photos (optional)</Text>
-          <Text type="secondary" className="d-block small mb-2">
-            Up to 5 photos. These help us approve your request faster.
-          </Text>
-          <Image.PreviewGroup>
-            <Upload
-              listType="picture-card"
-              fileList={uploadFileList}
-              beforeUpload={(file) => handleUpload(file as unknown as File)}
-              onRemove={(file) => {
-                setReturnImages((prev) => prev.filter((_, i) => String(i) !== file.uid));
-              }}
-              accept="image/png,image/jpeg,image/webp"
-            >
-              {returnImages.length >= 5 ? null : (
-                <div>
-                  {uploading ? <SyncOutlined spin /> : <PlusOutlined />}
-                  <div style={{ marginTop: 8 }}>Upload</div>
-                </div>
-              )}
-            </Upload>
-          </Image.PreviewGroup>
-        </div>
-
         <Divider className="my-2" />
-        <div className="d-flex justify-content-between refund-estimate-row">
+        <div className="d-flex justify-content-between">
           <Text strong>Estimated refund</Text>
           <Text strong>₹{returnEstimate(returnOrder).toLocaleString("en-IN")}</Text>
         </div>

@@ -120,8 +120,6 @@ const CheckoutPage: React.FC = () => {
         name:        razorpay.name,
         description: razorpay.description,
         prefill:     razorpay.prefill,
-        customerId:       razorpay.customerId,
-        rememberCustomer: razorpay.rememberCustomer,
         onSuccess: async (resp) => {
           try {
             const verified = await verifyPayment({
