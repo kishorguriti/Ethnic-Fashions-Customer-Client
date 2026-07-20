@@ -36,14 +36,6 @@ export interface RazorpayCheckoutOptions {
   name: string;
   description?: string;
   prefill?: { name?: string; email?: string; contact?: string };
-  /**
-   * Razorpay customer handle. Checkout only shows a returning buyer's saved
-   * cards when the same customer_id is supplied, so without this every payment
-   * looks like a first-time visitor.
-   */
-  customerId?: string;
-  /** Asks Checkout to offer "save this card for later". */
-  rememberCustomer?: boolean;
   onSuccess: (response: {
     razorpay_order_id: string;
     razorpay_payment_id: string;
@@ -62,9 +54,7 @@ export const openRazorpayCheckout = (opts: RazorpayCheckoutOptions) => {
     name: opts.name,
     description: opts.description,
     prefill: opts.prefill,
-    ...(opts.customerId ? { customer_id: opts.customerId } : {}),
-    ...(opts.rememberCustomer ? { remember_customer: true } : {}),
-    theme: { color: "#8e2de2" },
+    theme: { color: "#7c3aed" },
     handler: opts.onSuccess,
     modal: {
       ondismiss: () => opts.onDismiss?.(),

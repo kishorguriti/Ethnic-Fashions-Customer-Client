@@ -1,0 +1,89 @@
+$green-success: #22c55e;
+$blue-primary: #3b82f6;
+
+.order-confirmation-wrapper {
+  background-color: #ffffff;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+
+  .serif-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 36px;
+  }
+
+  .sub-message {
+    max-width: 500px;
+    margin: 0 auto;
+    font-size: 16px;
+  }
+
+  // Exact success icon styling
+  .success-icon-container {
+    display: flex;
+    justify-content: center;
+    
+    .outer-circle {
+      width: 100px;
+      height: 100px;
+      background-color: #f0fdf4;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      .inner-circle {
+        width: 60px;
+        height: 60px;
+        background-color: #dcfce7;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .check-icon {
+          color: $green-success;
+          font-size: 32px;
+        }
+      }
+    }
+  }
+
+  // Order Details Box
+  .order-info-card {
+    max-width: 550px;
+    border-radius: 16px;
+    background-color: #fafafa;
+    border: 1px solid #f0f0f0;
+    padding: 15px;
+
+    .package-icon-box {
+      font-size: 24px;
+      color: #94a3b8;
+    }
+
+    .detail-row {
+      font-size: 15px;
+    }
+  }
+
+  // Buttons
+  .track-btn {
+    height: 48px;
+    border-radius: 24px;
+    padding: 0 40px;
+    background-color: $blue-primary;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+
+  .continue-btn {
+    height: 48px;
+    border-radius: 24px;
+    padding: 0 35px;
+    color: $blue-primary;
+    border-color: $blue-primary;
+    font-weight: 600;
+  }
+}

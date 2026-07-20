@@ -12,7 +12,7 @@ import {
   CloseOutlined,
   RightOutlined,
 } from "@ant-design/icons";
-import Logo from "../../../assets/svg/Ethnic Style.svg";
+import Logo from "../../../assets/svg/Aarna.svg";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";

@@ -1,83 +1,90 @@
-.return-request-card {
-    border-radius: 20px;
+// My Returns — styled to match the rebuilt My Orders cards.
 
-    .section-title {
-        font-family: 'Playfair Display', serif;
-        font-weight: 500;
-    }
+$rr-primary: #8e2de2;
+$rr-surface: #f8fafc;
+$rr-border: #eef2f6;
+$rr-text: #111827;
+$rr-muted: #6b7280;
 
-    .custom-input,
-    .custom-textarea {
-        border-radius: 15px; // Matching the rounder style
-        border: 1px solid #e2e8f0;
-        padding: 10px 16px;
+.returns-container-card {
+  background: transparent;
 
-        &:focus {
-            border-color: #3b82f6;
-        }
-    }
-
-    .custom-radio-group {
-        .ant-radio-wrapper {
-            font-size: 15px;
-            margin-bottom: 8px;
-
-            // Makes the radio circle look like the image
-            .ant-radio-inner {
-                width: 20px;
-                height: 20px;
-            }
-        }
-    }
-
-    .policy-info-box {
-        background-color: #f8fafc;
-        border-radius: 16px;
-        padding: 20px;
-
-        ul {
-            padding-left: 0;
-            margin: 0;
-            list-style: none;
-
-            li {
-                font-size: 14px;
-                color: #64748b;
-                margin-bottom: 4px;
-                position: relative;
-
-                &::before {
-                    content: "•";
-                    margin-right: 8px;
-                }
-            }
-        }
-    }
-
-    .submit-return-btn {
-        height: 48px;
-        border-radius: 15px;
-        padding: 0 30px;
-        background-color: #3b82f6;
-        font-weight: 500;
-        font-size: 15px;
-        border: none;
-
-        &:hover {
-            background-color: #2563eb;
-        }
-    }
+  .returns-head .section-title {
+    font-weight: 600;
+    color: $rr-text;
+  }
 }
 
-@media (max-width: 767px) {
-    .return-request-card {
-        border-radius: 14px;
+.return-item-card {
+  border: 1px solid $rr-border !important;
+  border-radius: 18px !important;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 
-        .ant-card-body { padding: 16px !important; }
+  &:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    border-color: rgba($rr-primary, 0.25) !important;
+  }
 
-        .submit-return-btn {
-            width: 100%;
-            border-radius: 12px;
-        }
-    }
+  .return-number {
+    font-weight: 600;
+    color: $rr-text;
+  }
+
+  .return-header {
+    border-bottom: 1px dashed $rr-border;
+    padding-bottom: 12px;
+  }
+
+  .return-line-thumb {
+    width: 44px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid $rr-border;
+  }
+
+  .return-amount { font-size: 1.05rem; }
+
+  .return-admin-note {
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: $rr-surface;
+    border: 1px solid $rr-border;
+  }
+}
+
+.return-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid transparent;
+
+  .anticon { font-size: 0.85rem; }
+
+  &.rpill-pending    { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  &.rpill-approved   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  &.rpill-processing { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+  &.rpill-refunded   { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  &.rpill-rejected   { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+}
+
+.returns-empty {
+  background: $rr-surface;
+  border: 1px dashed #d8dee6;
+  border-radius: 16px;
+}
+
+@media (max-width: 767.98px) {
+  .return-item-card {
+    border-radius: 14px !important;
+
+    .return-footer { gap: 12px; }
+  }
 }

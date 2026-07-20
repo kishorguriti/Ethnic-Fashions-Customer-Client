@@ -15,17 +15,6 @@ export interface ReturnRequestPayload {
   reasonText?: string;
   type?: "return" | "exchange";
   items?: Array<{ variant: string; quantity: number }>;
-  /** Cloudinary URLs from uploadReturnImage(), shown to the admin on review. */
-  customerImages?: string[];
-}
-
-export interface ReturnRecordItem {
-  name: string;
-  color?: string;
-  size?: string;
-  image?: string;
-  quantity: number;
-  lineTotal: number;
 }
 
 export interface ReturnRecord {
@@ -36,12 +25,7 @@ export interface ReturnRecord {
   reasonText?: string;
   type: "return" | "exchange";
   amount: number;
-  // 'received' is a real backend state that was missing from this union.
-  status: "pending" | "approved" | "received" | "rejected" | "processing" | "refunded";
-  items?: ReturnRecordItem[];
-  customerImages?: string[];
-  refund?: { method?: string; amount?: number; at?: string | null };
-  adminNote?: string;
+  status: "pending" | "approved" | "rejected" | "processing" | "refunded";
   createdAt: string;
 }
 
@@ -68,19 +52,4 @@ export const getMyReturns = async (): Promise<{ returns: ReturnRecord[]; total: 
 export const getMyReturn = async (id: string): Promise<ReturnRecord> => {
   const res = await axiosInstance.get(`/returns/${id}`);
   return res.data.data.return;
-};
-
-/**
- * Uploads one reference photo for a return request and resolves with its URL.
- *
- * Goes to a customer-authorised route: the staff /assets/upload endpoint is
- * role-guarded to admin/partner and would 403 here.
- */
-export const uploadReturnImage = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("image", file);
-  const res = await axiosInstance.post("/assets/return-upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data.data.asset.url as string;
 };

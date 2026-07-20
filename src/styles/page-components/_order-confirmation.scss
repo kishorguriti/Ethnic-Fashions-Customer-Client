@@ -1,89 +1,208 @@
-$green-success: #22c55e;
-$blue-primary: #3b82f6;
+// Order Confirmed — reworked to match the checkout card language.
+
+$oc-primary: #8e2de2;
+$oc-green: #22c55e;
+$oc-surface: #f8fafc;
+$oc-border: #eef2f6;
+$oc-text: #111827;
+$oc-muted: #6b7280;
 
 .order-confirmation-wrapper {
-  background-color: #ffffff;
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
+  min-height: 70vh;
+  background: linear-gradient(180deg, #faf5ff 0%, #ffffff 45%);
 
-  .serif-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 500;
-    font-size: 36px;
-  }
+  .confirmation-inner { max-width: 620px; }
 
-  .sub-message {
-    max-width: 500px;
-    margin: 0 auto;
-    font-size: 16px;
-  }
-
-  // Exact success icon styling
+  // ─── Success mark ─────────────────────────────────────────────────────────
   .success-icon-container {
     display: flex;
     justify-content: center;
-    
+
     .outer-circle {
-      width: 100px;
-      height: 100px;
-      background-color: #f0fdf4;
+      width: 112px;
+      height: 112px;
       border-radius: 50%;
+      background: #f0fdf4;
       display: flex;
       align-items: center;
       justify-content: center;
-      
-      .inner-circle {
-        width: 60px;
-        height: 60px;
-        background-color: #dcfce7;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        .check-icon {
-          color: $green-success;
-          font-size: 32px;
-        }
-      }
+      animation: oc-pop 0.4s ease-out both;
+    }
+
+    .inner-circle {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: #dcfce7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .check-icon {
+      font-size: 40px;
+      color: $oc-green;
     }
   }
 
-  // Order Details Box
+  .serif-title {
+    font-weight: 600;
+    color: $oc-text;
+  }
+
+  .sub-message {
+    font-size: 1rem;
+    color: $oc-muted;
+  }
+
+  // ─── Summary card ─────────────────────────────────────────────────────────
   .order-info-card {
-    max-width: 550px;
-    border-radius: 16px;
-    background-color: #fafafa;
-    border: 1px solid #f0f0f0;
-    padding: 15px;
+    max-width: 520px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid $oc-border !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+    text-align: left;
 
     .package-icon-box {
-      font-size: 24px;
-      color: #94a3b8;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba($oc-primary, 0.08);
+      color: $oc-primary;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
     }
 
-    .detail-row {
-      font-size: 15px;
+    .order-number-value {
+      color: $oc-text;
+      letter-spacing: 0.4px;
+    }
+
+    .amount-paid {
+      font-size: 1.1rem;
+      color: $oc-text;
+    }
+
+    .total-row {
+      padding-top: 12px;
+      border-top: 1px dashed $oc-border;
     }
   }
 
-  // Buttons
-  .track-btn {
-    height: 48px;
-    border-radius: 24px;
-    padding: 0 40px;
-    background-color: $blue-primary;
+  .confirm-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
     font-weight: 600;
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
   }
 
+  // ─── What happens next ────────────────────────────────────────────────────
+  .next-steps-card {
+    max-width: 520px;
+    border-radius: 18px;
+    background: $oc-surface;
+    border: 1px solid $oc-border !important;
+
+    .next-steps { gap: 8px; }
+
+    .next-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .next-step-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid $oc-border;
+      color: #9ca3af;
+
+      &.is-done {
+        background: rgba($oc-primary, 0.1);
+        border-color: rgba($oc-primary, 0.3);
+        color: $oc-primary;
+      }
+    }
+
+    .next-step-label {
+      font-size: 0.72rem;
+      color: $oc-muted;
+      text-align: center;
+    }
+  }
+
+  // ─── Actions ──────────────────────────────────────────────────────────────
+  .track-btn,
   .continue-btn {
     height: 48px;
     border-radius: 24px;
-    padding: 0 35px;
-    color: $blue-primary;
-    border-color: $blue-primary;
+    padding-inline: 28px;
     font-weight: 600;
+  }
+
+  .track-btn {
+    background: $oc-primary;
+    border-color: $oc-primary;
+    box-shadow: 0 6px 16px rgba($oc-primary, 0.28);
+
+    // Literal rather than darken(): that function is deprecated in Dart Sass
+    // and removed in 2.0, so this keeps the build warning-free.
+    &:hover {
+      background: #7a27c2 !important;
+      border-color: #7a27c2 !important;
+    }
+  }
+
+  .continue-btn {
+    border-color: #d8dee6;
+    color: $oc-text;
+
+    &:hover {
+      border-color: $oc-primary !important;
+      color: $oc-primary !important;
+    }
+  }
+
+  .email-footer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $oc-muted;
+  }
+}
+
+@keyframes oc-pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 575.98px) {
+  .order-confirmation-wrapper {
+    .success-icon-container .outer-circle { width: 92px; height: 92px; }
+    .success-icon-container .inner-circle { width: 64px; height: 64px; }
+    .success-icon-container .check-icon { font-size: 32px; }
+
+    .action-buttons-row .track-btn,
+    .action-buttons-row .continue-btn { width: 100%; }
+
+    .next-steps-card .next-step-label { font-size: 0.66rem; }
   }
 }

@@ -22,12 +22,6 @@ export interface OrderItem {
   lineTotal: number;
 }
 
-export interface OrderTimelineEntry {
-  status: string;
-  note?: string;
-  at: string;
-}
-
 export interface OrderPayment {
   method: "razorpay" | "cod";
   status: "created" | "pending" | "paid" | "failed" | "refunded" | "partially_refunded";
@@ -53,11 +47,6 @@ export interface Order {
   estimatedDelivery: string | null;
   // Populated once delivered — the per-product return window deadline (backend).
   returnEligibleUntil?: string | null;
-  // Fulfilment history, used to draw the tracking steps with real dates.
-  timeline?: OrderTimelineEntry[];
-  shippedAt?: string | null;
-  deliveredAt?: string | null;
-  invoice?: { number?: string; url?: string; createdAt?: string | null };
   payment: OrderPayment;
   createdAt: string;
   // Convenience alias used by the confirmation screen.
@@ -72,9 +61,6 @@ export interface RazorpayHandshake {
   name: string;
   description?: string;
   prefill?: { name?: string; email?: string; contact?: string };
-  /** Razorpay customer handle — required for saved cards to be offered. */
-  customerId?: string;
-  rememberCustomer?: boolean;
 }
 
 export interface CreateOrderResult {
@@ -151,12 +137,4 @@ export const cancelOrder = async (id: string, reason?: string): Promise<Order> =
 export const placeOrder = async (payload: PlaceOrderPayload): Promise<Order> => {
   const { order } = await createOrder(payload);
   return order;
-};
-
-/** Fetches (generating on first request) the tax invoice for a paid order. */
-export const getInvoice = async (
-  orderId: string,
-): Promise<{ number: string; url: string }> => {
-  const res = await axiosInstance.get(`/invoices/${orderId}`);
-  return res.data.data.invoice;
 };
