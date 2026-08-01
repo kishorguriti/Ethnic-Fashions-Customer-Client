@@ -21,9 +21,11 @@ import PaymentMethods from "../pages/customer/account/PaymentMethods";
 import Checkout from "../features/checkout/Checkout";
 import OrderConfirmation from "../features/checkout/OrderConfirmation";
 import StaticPage from "../pages/customer/StaticPage";
+import { usePageTracking } from "../hooks/usePageTracking";
 // import ShoppingCart from "../features/cart/ShoppingCart";
 
 export default function AppRoutes() {
+  usePageTracking()
   return (
     <Routes>
       {/* Customer Routes */}
